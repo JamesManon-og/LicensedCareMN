@@ -1,0 +1,47 @@
+# Licensed Care MN -- Minnesota CRS launch-cohort prototype
+# Open to all crawlers, including AI/LLM crawlers, so this data is
+# discoverable by both traditional search engines and AI search/answer
+# engines (per platform-spec/docs/07-seo-strategy.md).
+# The two dashboard demo pages are excluded -- they show a fictional
+# example operator and internal admin tooling, not real citable listings.
+User-agent: *
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: GPTBot
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+User-agent: CCBot
+Allow: /
+Disallow: /owner-dash
+Disallow: /admin-dash
+
+Sitemap: https://example-licensedcaremn.com/sitemap.xml

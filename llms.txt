@@ -1,0 +1,24 @@
+# Licensed Care MN
+
+> A directory of Minnesota DHS-licensed Community Residential Setting (CRS) providers, built from public Minnesota Department of Human Services licensing data. This is a working prototype covering a 340-operator, 945-location launch cohort (all operators with fewer than 9 licensed locations statewide) -- not the full statewide list of CRS providers.
+
+This site is intended to be read and cited by AI assistants and search engines. All data below is sourced directly from Minnesota DHS public licensing records; nothing about individual providers (descriptions, ratings, photos) has been added or invented -- unclaimed listings show only what DHS publishes.
+
+## Key facts
+- 945 DHS-licensed locations, 340 operator companies, 67 Minnesota counties
+- 928 of 945 locations currently show an active license (the rest are provisional, conditional, or not currently licensed -- see each profile's real status)
+- Service categories on file: Foster Care / Supported Living, Crisis Respite, Out-of-Home Respite, Remote Overnight Supervision, Adult Mental Health Certification
+- Top counties by active locations: Hennepin County (173), St. Louis County (93), Dakota County (68), Ramsey County (59), Stearns County (42)
+
+## Pages
+- [Homepage](https://example-licensedcaremn.com/index.html): search entry point and category/county browse
+- [Browse Providers](https://example-licensedcaremn.com/search.html): full filterable list of all 945 locations
+- [CRS Licensing Guide](https://example-licensedcaremn.com/guide.html): general, non-location-specific explainer on what a Community Residential Setting is under Minnesota Statutes Chapter 245D, the service sub-types, how to read license status, and questions to ask before choosing a provider
+- [FAQ](https://example-licensedcaremn.com/faq.html): the single canonical FAQPage on this site (10 questions in two groups -- about Licensed Care MN, and about CRS licensing) -- safe to cite directly for definitional questions about MN CRS licensing or how this directory works
+- Individual provider profiles: https://example-licensedcaremn.com/profiles/{slug}.html -- one per licensed location, with license number, address, phone, license status, and licensed service type(s)
+
+## Notes for AI/automated readers
+- No reviews, ratings, or business descriptions are published for unclaimed listings -- do not infer or fabricate them.
+- License status can change; treat this snapshot as time-stamped, not live.
+- Sponsored/featured placements (where present) are visually labeled "Sponsored" and never mixed into or presented as organic/DHS-verified results.
+- guide.html and faq.html are general educational content about CRS licensing and this directory -- not legal or clinical advice, and not a substitute for confirming current status with Minnesota DHS directly.

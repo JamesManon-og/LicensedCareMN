@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owner Dashboard (prototype) — Licensed Care MN</title>
+<meta name="description" content="A fictional-example Owner Dashboard demonstrating claimed-listing management for the Licensed Care MN prototype. Not a real business or real data.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%231a2540'/%3E%3Ccircle cx='15' cy='23' r='10.5' fill='%23ffffff' fill-opacity='0.95'/%3E%3Ccircle cx='25' cy='23' r='10.5' fill='%23da291c'/%3E%3Cpath d='M20 13 L27.5 22 L12.5 22 Z' fill='%231a2540'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="headerbar">
+    <a class="logo" href="index.html" style="align-items:center;">
+      <div class="logo-mark"><svg viewBox="0 0 40 40" width="17" height="17" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div>
+      <div><div class="logo-word">Licensed Care MN</div><div class="logo-sub">CRS PROVIDER DIRECTORY &middot; LAUNCH COHORT PROTOTYPE</div></div>
+    </a>
+    <nav class="mainnav">
+      <a href="search.html">Browse Providers</a>
+      <a href="guide.html">CRS Guide</a>
+      <a href="faq.html">FAQ</a>
+      <a href="index.html#about">About this prototype</a>
+    </nav>
+  </div>
+</header>
+
+<div class="dash-shell">
+  <div class="dash-nav light">
+    <div style="padding:8px 13px 18px;">
+      <a class="logo" href="index.html" style="align-items:center;">
+        <div class="logo-mark" style="width:28px;height:28px;"><svg viewBox="0 0 40 40" width="15" height="15" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div>
+        <div class="logo-word" style="font-size:13px;">Licensed Care MN</div>
+      </a>
+    </div>
+    <a href="owner-dashboard.html" class="dash-navitem on"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><rect x="5" y="3.5" width="14" height="17" rx="1"/><rect x="8" y="7" width="2.2" height="2.2"/><rect x="13.8" y="7" width="2.2" height="2.2"/><rect x="8" y="11.4" width="2.2" height="2.2"/><rect x="13.8" y="11.4" width="2.2" height="2.2"/><rect x="9.4" y="16.2" width="5.2" height="4.3"/></svg>Locations</a>
+    <a href="owner-dash-leads.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M7 3.5H4.5A1.5 1.5 0 0 0 3 5c0 9.4 7.6 17 17 17a1.5 1.5 0 0 0 1.5-1.5V18c0-.6-.4-1.1-1-1.2-1.2-.3-2.3-.7-3.4-1.2-.5-.2-1 0-1.4.4l-1.7 1.7a15.3 15.3 0 0 1-6.2-6.2l1.7-1.7c.4-.4.5-.9.4-1.4a12 12 0 0 1-1.2-3.4c-.1-.6-.6-1-1.2-1Z"/></svg>Leads</a>
+    <a href="owner-dash-analytics.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="1.8"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="1.8"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10.5" cy="18" r="1.8"/></svg>Analytics</a>
+    <a href="owner-dash-billing.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 5-3.2 8.5-7 10-3.8-1.5-7-5-7-10V6l7-3Z"/><path d="M8.7 12.2l2.3 2.3 4.3-4.6"/></svg>Billing</a>
+    <a href="owner-dash-team.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.3V20h12v-9.7"/><path d="M10 20v-5.5h4V20"/></svg>Team</a>
+    <div style="flex:1;"></div>
+    <a href="index.html" class="dash-navitem" style="color:var(--ink-3);"><svg class="icon" style="width:14px;height:14px;transform:scaleX(-1)" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7"/></svg>Back to directory</a>
+  </div>
+
+  <div class="dash-main">
+    <div class="demo-banner"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><line x1="12" y1="9.5" x2="12" y2="13.5"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"/></svg><span><b>This is a fictional example.</b> "Northern Pines Group Home" is not a real Minnesota operator and does not appear in the DHS dataset. No real business has claimed a listing on this prototype yet &mdash; every page under this Owner Dashboard shows what it would look like once claiming and login exist.</span></div>
+
+    <div class="dash-topbar">
+      <div>
+        <div style="font-weight:800;font-size:16px;">Northern Pines Group Home <span style="font-weight:600;color:var(--ink-3);font-size:12.5px;">(fictional example)</span></div>
+        <div style="font-size:12.5px;color:var(--ink-3);">Tier B &middot; 3 locations &middot; Owner view</div>
+      </div>
+      <button class="btn-secondary" disabled title="Prototype only &mdash; there is no real login">Log out</button>
+    </div>
+
+    <div class="wrap" style="max-width:1040px;padding:22px 26px 60px;">
+      <div class="stat-grid" style="margin-bottom:20px;">
+        <div class="card stat-card"><div class="label">Locations</div><div class="display tabular" style="font-size:25px;font-weight:700;">3</div></div>
+        <div class="card stat-card"><div class="label">Claimed</div><div class="display tabular" style="font-size:25px;font-weight:700;">2 <span style="font-size:14px;color:var(--ink-3);font-weight:600;">of 3</span></div></div>
+        <div class="card stat-card"><div class="label">New leads (7d)</div><div class="display tabular" style="font-size:25px;font-weight:700;">6</div></div>
+        <div class="card stat-card"><div class="label">Current plan</div><div class="display" style="font-size:19px;font-weight:700;color:var(--brand);">Featured</div></div>
+      </div>
+
+      <div class="dash-2col-wide">
+        <div>
+          <div class="card" style="padding:16px 18px;margin-bottom:16px;">
+            <div style="font-weight:800;font-size:14px;margin-bottom:14px;">Your locations <span style="font-weight:600;color:var(--ink-3);">(fictional example data)</span></div>
+
+            <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+              <div class="avatar-sq" style="width:40px;height:40px;background:var(--brand-soft);color:var(--brand);">NP</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <div style="font-weight:700;font-size:13.5px;">Northern Pines &ndash; Rochester House</div>
+                  <div class="badge badge-dhs"><svg class="icon" style="width:11px;height:11px" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M8.2 12.3l2.5 2.5 5-5.4"/></svg>Verified</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 8px;">Rochester, MN &middot; fictional example</div>
+                <div class="progress"><div style="width:88%;"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--ink-3);"><span>Profile 88% complete</span><span>3 new leads this week</span></div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:14px;align-items:flex-start;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+              <div class="avatar-sq" style="width:40px;height:40px;background:var(--caution-bg,oklch(93% 0.05 80));color:var(--caution-ink,oklch(45% 0.12 70));">NP</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <div style="font-weight:700;font-size:13.5px;">Northern Pines &ndash; Winona House</div>
+                  <div class="badge" style="background:oklch(93% 0.05 80);color:oklch(45% 0.12 70);">Claimed</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 8px;">Winona, MN &middot; fictional example</div>
+                <div class="progress"><div style="width:52%;"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--ink-3);"><span>Profile 52% complete</span><span>2 new leads this week</span></div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div class="avatar-sq" style="width:40px;height:40px;background:var(--surface-2);color:var(--ink-3);">NP</div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <div style="font-weight:700;font-size:13.5px;">Northern Pines &ndash; Faribault House</div>
+                  <div class="badge badge-unverified">Unclaimed</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin:2px 0 8px;">Faribault, MN &middot; fictional example</div>
+                <div class="progress"><div style="width:20%;"></div></div>
+                <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--ink-3);"><span>Profile 20% complete</span><span>1 new lead this week</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:16px 18px;">
+            <div style="font-weight:800;font-size:14px;margin-bottom:12px;">Recent leads <span style="font-weight:600;color:var(--ink-3);">(fictional example data)</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--border);">
+                <svg class="icon" style="width:15px;height:15px;stroke:var(--critical-ink,oklch(50% 0.16 25))" viewBox="0 0 24 24" fill="none"><path d="M7 3.5H4.5A1.5 1.5 0 0 0 3 5c0 9.4 7.6 17 17 17a1.5 1.5 0 0 0 1.5-1.5V18c0-.6-.4-1.1-1-1.2-1.2-.3-2.3-.7-3.4-1.2-.5-.2-1 0-1.4.4l-1.7 1.7a15.3 15.3 0 0 1-6.2-6.2l1.7-1.7c.4-.4.5-.9.4-1.4a12 12 0 0 1-1.2-3.4c-.1-.6-.6-1-1.2-1Z"/></svg>
+                <div><div style="font-size:13px;font-weight:600;">Missed call &middot; Rochester House</div><div style="font-size:11.5px;color:var(--ink-3);">Fictional example &middot; 2 days ago</div></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--border);">
+                <svg class="icon" style="width:15px;height:15px;stroke:var(--good-ink)" viewBox="0 0 24 24" fill="none"><path d="M7 3.5H4.5A1.5 1.5 0 0 0 3 5c0 9.4 7.6 17 17 17a1.5 1.5 0 0 0 1.5-1.5V18c0-.6-.4-1.1-1-1.2-1.2-.3-2.3-.7-3.4-1.2-.5-.2-1 0-1.4.4l-1.7 1.7a15.3 15.3 0 0 1-6.2-6.2l1.7-1.7c.4-.4.5-.9.4-1.4a12 12 0 0 1-1.2-3.4c-.1-.6-.6-1-1.2-1Z"/></svg>
+                <div><div style="font-size:13px;font-weight:600;">Answered call &middot; Rochester House</div><div style="font-size:11.5px;color:var(--ink-3);">Fictional example &middot; 3 days ago</div></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <svg class="icon" style="width:15px;height:15px;stroke:var(--brand)" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.2 7-11.6A7 7 0 0 0 5 9.4C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.4" r="2.3"/></svg>
+                <div><div style="font-size:13px;font-weight:600;">Contact form &middot; Winona House</div><div style="font-size:11.5px;color:var(--ink-3);">Fictional example &middot; 5 days ago</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="padding:16px 18px;margin-bottom:16px;">
+            <div style="font-weight:800;font-size:14px;margin-bottom:10px;">Suggestions for your profiles</div>
+            <p style="font-size:12.5px;color:var(--ink-2);line-height:1.6;margin:0 0 12px;">In a live version, an AI agent (see <code>platform-spec/agents/business-content-agent.md</code>) would review each claimed profile and suggest fixes here &mdash; a missing photo, a thin description, an outdated phone number.</p>
+            <div class="empty-state" style="padding:18px;">No suggestions generated yet &mdash; this prototype doesn't run the content agent.</div>
+          </div>
+
+          <div class="card" style="padding:16px 18px;">
+            <div style="font-weight:800;font-size:14px;margin-bottom:12px;">Your plan</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--surface-2);"><span style="font-size:13px;font-weight:600;">Free</span><span class="tabular" style="font-size:13px;color:var(--ink-3);">$0/mo</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--brand-soft);border:1.5px solid var(--brand);"><span style="font-size:12.5px;font-weight:700;color:var(--brand);">Featured &middot; current (example)</span><span class="tabular" style="font-size:13px;font-weight:700;color:var(--brand);">$9.99/mo</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--surface-2);"><span style="font-size:13px;font-weight:600;">Premium</span><span class="tabular" style="font-size:13px;color:var(--ink-3);">$19.99/mo</span></div>
+              <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:var(--surface-2);"><span style="font-size:13px;font-weight:600;">Spotlight</span><span class="tabular" style="font-size:13px;color:var(--ink-3);">$29.99/mo</span></div>
+            </div>
+            <button class="btn-primary" style="width:100%;justify-content:center;margin-top:14px;" disabled title="Prototype only &mdash; no real billing">Upgrade plan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap footcols">
+    <div>
+      <div class="logo" style="margin-bottom:10px;"><div class="logo-mark" style="width:26px;height:26px;"><svg viewBox="0 0 40 40" width="14" height="14" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div><div class="logo-word" style="font-size:14px;">Licensed Care MN</div></div>
+      <p style="font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:280px;">Data sourced from the Minnesota Department of Human Services (DHS) public CRS licensing lookup. Not affiliated with or endorsed by DHS. This prototype covers the 340-operator, 945-location launch cohort only &mdash; not the full statewide list.</p>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">Browse</div>
+      <a href="search.html">All providers</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">About</div>
+      <a href="guide.html">CRS licensing guide</a>
+      <a href="faq.html">FAQ</a>
+      <a href="index.html#about">Prototype notes</a>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">Dashboards</div>
+      <a href="owner-dashboard.html">Owner dashboard (demo)</a>
+      <a href="admin-dashboard.html">Admin dashboard (demo)</a>
+    </div>
+  </div>
+  <div class="wrap footbottom">&copy; 2026 Licensed Care MN &middot; Working prototype, not a live product.</div>
+</footer>
+<script>
+(function(){
+  document.querySelectorAll('details.card').forEach(function(d){
+    var content = d.querySelector(':scope > div');
+    if(!content) return;
+    content.style.overflow = 'hidden';
+    d.addEventListener('toggle', function(){
+      if(d.open){
+        var h = content.scrollHeight;
+        content.style.maxHeight = '0px';
+        requestAnimationFrame(function(){
+          content.style.transition = 'max-height .25s ease';
+          content.style.maxHeight = h + 'px';
+        });
+        content.addEventListener('transitionend', function te(){
+          content.style.maxHeight = 'none';
+          content.removeEventListener('transitionend', te);
+        });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

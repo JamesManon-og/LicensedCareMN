@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leads (prototype) — Licensed Care MN</title>
+<meta name="description" content="Leads for the Licensed Care MN prototype.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='9' fill='%231a2540'/%3E%3Ccircle cx='15' cy='23' r='10.5' fill='%23ffffff' fill-opacity='0.95'/%3E%3Ccircle cx='25' cy='23' r='10.5' fill='%23da291c'/%3E%3Cpath d='M20 13 L27.5 22 L12.5 22 Z' fill='%231a2540'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="headerbar">
+    <a class="logo" href="index.html" style="align-items:center;">
+      <div class="logo-mark"><svg viewBox="0 0 40 40" width="17" height="17" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div>
+      <div><div class="logo-word">Licensed Care MN</div><div class="logo-sub">CRS PROVIDER DIRECTORY &middot; LAUNCH COHORT PROTOTYPE</div></div>
+    </a>
+    <nav class="mainnav">
+      <a href="search.html">Browse Providers</a>
+      <a href="guide.html">CRS Guide</a>
+      <a href="faq.html">FAQ</a>
+      <a href="index.html#about">About this prototype</a>
+    </nav>
+  </div>
+</header>
+
+<div class="dash-shell">
+  <div class="dash-nav light">
+    <div style="padding:8px 13px 18px;">
+      <a class="logo" href="index.html" style="align-items:center;">
+        <div class="logo-mark" style="width:28px;height:28px;"><svg viewBox="0 0 40 40" width="15" height="15" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div>
+        <div class="logo-word" style="font-size:13px;">Licensed Care MN</div>
+      </a>
+    </div>
+    <a href="owner-dashboard.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><rect x="5" y="3.5" width="14" height="17" rx="1"/><rect x="8" y="7" width="2.2" height="2.2"/><rect x="13.8" y="7" width="2.2" height="2.2"/><rect x="8" y="11.4" width="2.2" height="2.2"/><rect x="13.8" y="11.4" width="2.2" height="2.2"/><rect x="9.4" y="16.2" width="5.2" height="4.3"/></svg>Locations</a>
+    <a href="owner-dash-leads.html" class="dash-navitem on"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M7 3.5H4.5A1.5 1.5 0 0 0 3 5c0 9.4 7.6 17 17 17a1.5 1.5 0 0 0 1.5-1.5V18c0-.6-.4-1.1-1-1.2-1.2-.3-2.3-.7-3.4-1.2-.5-.2-1 0-1.4.4l-1.7 1.7a15.3 15.3 0 0 1-6.2-6.2l1.7-1.7c.4-.4.5-.9.4-1.4a12 12 0 0 1-1.2-3.4c-.1-.6-.6-1-1.2-1Z"/></svg>Leads</a>
+    <a href="owner-dash-analytics.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="1.8"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="1.8"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="10.5" cy="18" r="1.8"/></svg>Analytics</a>
+    <a href="owner-dash-billing.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 5-3.2 8.5-7 10-3.8-1.5-7-5-7-10V6l7-3Z"/><path d="M8.7 12.2l2.3 2.3 4.3-4.6"/></svg>Billing</a>
+    <a href="owner-dash-team.html" class="dash-navitem"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.3V20h12v-9.7"/><path d="M10 20v-5.5h4V20"/></svg>Team</a>
+    <div style="flex:1;"></div>
+    <a href="index.html" class="dash-navitem" style="color:var(--ink-3);"><svg class="icon" style="width:14px;height:14px;transform:scaleX(-1)" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7"/></svg>Back to directory</a>
+  </div>
+  <div class="dash-main">
+    <div class="demo-banner"><svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><line x1="12" y1="9.5" x2="12" y2="13.5"/><circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"/></svg><span><b>This is a fictional example.</b> "Northern Pines Group Home" is not a real Minnesota operator and does not appear in the DHS dataset. No real business has claimed a listing on this prototype yet &mdash; every page under this Owner Dashboard shows what it would look like once claiming and login exist.</span></div>
+    <div class="dash-topbar">
+      <div><div style="font-weight:800;font-size:16px;">Leads</div><div style="font-size:12.5px;color:var(--ink-3);">Fictional example data · filter is real</div></div>
+    </div>
+    <div class="wrap" style="max-width:1040px;padding:22px 26px 60px;">
+      <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div style="font-weight:800;font-size:14.5px;">All leads <span style="font-weight:600;color:var(--ink-3);">(fictional example data)</span></div>
+      <select id="leadStatusFilter" style="border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;">
+        <option value="">All statuses</option>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Closed">Closed</option>
+      </select>
+    </div>
+    <table class="dash-table">
+      <thead><tr><th>When</th><th>Type</th><th>Location</th><th>Status</th></tr></thead>
+      <tbody id="leadsBody"><tr data-status="New"><td>2 days ago</td><td>Missed call</td><td>Rochester House</td><td><span class="badge" style="background:var(--critical-bg);color:var(--critical-ink);">New</span></td></tr>
+<tr data-status="Contacted"><td>3 days ago</td><td>Answered call</td><td>Rochester House</td><td><span class="badge" style="background:var(--caution-bg);color:var(--caution-ink);">Contacted</span></td></tr>
+<tr data-status="New"><td>5 days ago</td><td>Contact form</td><td>Winona House</td><td><span class="badge" style="background:var(--critical-bg);color:var(--critical-ink);">New</span></td></tr>
+<tr data-status="Closed"><td>6 days ago</td><td>Answered call</td><td>Winona House</td><td><span class="badge" style="background:var(--good-bg);color:var(--good-ink);">Closed</span></td></tr>
+<tr data-status="New"><td>8 days ago</td><td>Missed call</td><td>Faribault House</td><td><span class="badge" style="background:var(--critical-bg);color:var(--critical-ink);">New</span></td></tr>
+<tr data-status="Closed"><td>9 days ago</td><td>Contact form</td><td>Rochester House</td><td><span class="badge" style="background:var(--good-bg);color:var(--good-ink);">Closed</span></td></tr>
+<tr data-status="Contacted"><td>11 days ago</td><td>Answered call</td><td>Faribault House</td><td><span class="badge" style="background:var(--caution-bg);color:var(--caution-ink);">Contacted</span></td></tr>
+<tr data-status="Closed"><td>13 days ago</td><td>Missed call</td><td>Winona House</td><td><span class="badge" style="background:var(--good-bg);color:var(--good-ink);">Closed</span></td></tr>
+<tr data-status="New"><td>15 days ago</td><td>Contact form</td><td>Faribault House</td><td><span class="badge" style="background:var(--critical-bg);color:var(--critical-ink);">New</span></td></tr></tbody>
+    </table>
+  </div>
+  <script>document.getElementById('leadStatusFilter').onchange = function(e){
+  var v = e.target.value;
+  document.querySelectorAll('#leadsBody tr').forEach(function(tr){
+    tr.style.display = (!v || tr.dataset.status === v) ? '' : 'none';
+  });
+};</script>
+    </div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap footcols">
+    <div>
+      <div class="logo" style="margin-bottom:10px;"><div class="logo-mark" style="width:26px;height:26px;"><svg viewBox="0 0 40 40" width="14" height="14" style="stroke:none;flex:none;" aria-hidden="true"><circle cx="15" cy="23" r="10.5" fill="#ffffff" fill-opacity="0.95"/><circle cx="25" cy="23" r="10.5" fill="#da291c"/><path d="M20 13 L27.5 22 L12.5 22 Z" fill="#1a2540"/></svg></div><div class="logo-word" style="font-size:14px;">Licensed Care MN</div></div>
+      <p style="font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:280px;">Data sourced from the Minnesota Department of Human Services (DHS) public CRS licensing lookup. Not affiliated with or endorsed by DHS. This prototype covers the 340-operator, 945-location launch cohort only &mdash; not the full statewide list.</p>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">Browse</div>
+      <a href="search.html">All providers</a>
+      <a href="index.html">Home</a>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">About</div>
+      <a href="guide.html">CRS licensing guide</a>
+      <a href="faq.html">FAQ</a>
+      <a href="index.html#about">Prototype notes</a>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:10px;">Dashboards</div>
+      <a href="owner-dashboard.html">Owner dashboard (demo)</a>
+      <a href="admin-dashboard.html">Admin dashboard (demo)</a>
+    </div>
+  </div>
+  <div class="wrap footbottom">&copy; 2026 Licensed Care MN &middot; Working prototype, not a live product.</div>
+</footer>
+<script>
+(function(){
+  document.querySelectorAll('details.card').forEach(function(d){
+    var content = d.querySelector(':scope > div');
+    if(!content) return;
+    content.style.overflow = 'hidden';
+    d.addEventListener('toggle', function(){
+      if(d.open){
+        var h = content.scrollHeight;
+        content.style.maxHeight = '0px';
+        requestAnimationFrame(function(){
+          content.style.transition = 'max-height .25s ease';
+          content.style.maxHeight = h + 'px';
+        });
+        content.addEventListener('transitionend', function te(){
+          content.style.maxHeight = 'none';
+          content.removeEventListener('transitionend', te);
+        });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
