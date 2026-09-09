@@ -18,7 +18,14 @@ npm install
 npm run dev
 ```
 
-The public directory runs without external credentials using the committed `locations.json` launch snapshot.
+The public directory runs without external credentials using the committed `data/locations.json` launch snapshot.
+
+## Repository layout
+
+- `app/`, `components/`, and `lib/` contain the active Next.js application.
+- `data/locations.json` is the V1 provider-data snapshot used by the public directory.
+- `supabase/` and `scripts/` support the manual, approved data-import workflow.
+- `legacy/static-site/` preserves the retired static HTML prototype and is not part of the Next.js build or deployment.
 
 ## Enable operations with Supabase
 

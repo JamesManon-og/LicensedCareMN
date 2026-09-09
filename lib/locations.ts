@@ -1,4 +1,4 @@
-import rawLocations from "@/locations.json";
+import rawLocations from "@/data/locations.json";
 import {
   SERVICE_TAGS,
   type ProviderLocation,
