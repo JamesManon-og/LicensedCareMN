@@ -4,7 +4,7 @@ export function SearchFilters({ counties, filters }: { counties: readonly string
   return (
     <form action="/search" className="search-filters card" aria-label="Filter providers">
       <label className="filter-label" htmlFor="q">Search providers</label>
-      <input id="q" name="q" defaultValue={filters.query} placeholder="Name, city, or county" />
+      <input id="q" name="q" defaultValue={filters.query} placeholder="Name, city, county, ZIP, or license #" />
 
       <label className="filter-label" htmlFor="county">County</label>
       <select id="county" name="county" defaultValue={filters.county}>

@@ -23,7 +23,7 @@ export default async function HomePage() {
           <p className="hero-copy">Search {stats.locations.toLocaleString()} provider locations across {stats.counties} Minnesota counties by provider name, city, county, service type, or listed license status.</p>
           <form action="/search" className="search-bar hero-search">
             <label className="sr-only" htmlFor="home-search">Search providers</label>
-            <input id="home-search" name="q" placeholder="Search by provider name, city, or county" />
+            <input id="home-search" name="q" placeholder="Search by provider name, city, county, ZIP, or license #" />
             <button className="btn-primary" type="submit">Search</button>
           </form>
         </div>

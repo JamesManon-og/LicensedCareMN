@@ -77,16 +77,19 @@ export function getTopCounties(limit = 8) {
     .slice(0, limit);
 }
 
+// Mirrors search_directory (supabase/migrations/0005_search_aliases.sql) without the typo tolerance.
+const SAINT_TERMS = new Set(["st", "st.", "saint"]);
+
 function includesSearchText(location: ProviderLocation, query: string) {
-  if (!query) return true;
+  const normalized = query.trim().toLocaleLowerCase();
+  if (!normalized) return true;
+  if (/^\d{5,}(-\d{4})?$/.test(normalized) && (location.license_number === normalized || location.zip.trim().startsWith(normalized))) return true;
   const haystack = [location.program_name, location.company, location.city, location.county]
     .join(" ")
     .toLocaleLowerCase();
-  return query
-    .toLocaleLowerCase()
+  return normalized
     .split(/\s+/)
-    .filter(Boolean)
-    .every((term) => haystack.includes(term));
+    .every((term) => haystack.includes(term) || (SAINT_TERMS.has(term) && /\b(st|saint)\b/.test(haystack)));
 }
 
 /** Clamps a requested page into [1, totalPages]; an empty result still has one (empty) page. */
@@ -132,6 +135,8 @@ function mapDatabaseLocation(row: Record<string, unknown>): ProviderLocation {
   };
 }
 
+const LISTING_PAGE_SIZE = 1000;
+
 /**
  * Public pages use the checked-in launch snapshot until Supabase is configured.
  * Once configured, the same routes read the latest approved provider rows.
@@ -139,13 +144,23 @@ function mapDatabaseLocation(row: Record<string, unknown>): ProviderLocation {
 export async function getDirectoryLocations() {
   if (!hasSupabaseConfig) return locations;
   const client = getAdminSupabase();
-  const { data, error } = await client
-    .from("provider_locations")
-    .select(PROVIDER_COLUMNS)
-    .eq("is_current", true)
-    .order("program_name");
-  if (error || !data?.length) return locations;
-  return data.map((row) => mapDatabaseLocation(row));
+  const rows: Record<string, unknown>[] = [];
+  // The Data API returns at most 1,000 rows per request, so read the listings a page at a time.
+  // A database error throws, like the other directory reads, so a regenerating page keeps its
+  // last good version instead of silently showing the launch snapshot.
+  for (let from = 0; ; from += LISTING_PAGE_SIZE) {
+    const { data, error } = await client
+      .from("provider_locations")
+      .select(PROVIDER_COLUMNS)
+      .eq("is_current", true)
+      .order("program_name")
+      .order("license_number")
+      .range(from, from + LISTING_PAGE_SIZE - 1);
+    if (error) throw new Error(`Directory listing failed: ${error.message}`);
+    rows.push(...data);
+    if (data.length < LISTING_PAGE_SIZE) break;
+  }
+  return rows.map((row) => mapDatabaseLocation(row));
 }
 
 /**
