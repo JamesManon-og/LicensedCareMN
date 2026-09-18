@@ -22,8 +22,9 @@ const rowSchema = z.object({
   company: z.string().trim().min(1),
   address: z.string().trim().min(1),
   city: z.string().trim().min(1),
-  county: z.string().trim().min(1),
-  zip: z.string().trim().min(1),
+  // "Hennepin County" would render as "Hennepin County County" and add a second county filter option.
+  county: z.string().trim().transform((county) => county.replace(/\s+county$/i, "")).pipe(z.string().min(1)),
+  zip: z.string().trim().regex(/^\d{5}(-\d{4})?$/, "Use a 5-digit ZIP code or ZIP+4"),
   phone: z.string().trim().optional(),
   license_status: z.string().trim().min(1),
   tags: z.string().trim().min(1)
@@ -48,10 +49,10 @@ function getStatusClass(status: string): StatusClass {
 }
 
 function toProvider(row: CsvRow, tier: string): ProviderLocation | CsvImportIssue[] {
-  const tags = row.tags
+  const tags = [...new Set(row.tags
     .split("|")
     .map((tag) => tag.trim())
-    .filter(Boolean);
+    .filter(Boolean))];
   const invalidTags = tags.filter((tag) => !isServiceTag(tag));
 
   if (!tags.length || invalidTags.length) {
@@ -62,7 +63,7 @@ function toProvider(row: CsvRow, tier: string): ProviderLocation | CsvImportIssu
   return {
     id: row.license_number,
     license_number: row.license_number,
-    slug: `${slugify(row.program_name)}-${slugify(row.city)}-${row.license_number}`,
+    slug: `${slugify(row.program_name)}-${slugify(row.city)}-${slugify(row.license_number)}`,
     program_name: row.program_name,
     company: row.company,
     tier,
@@ -80,38 +81,44 @@ function toProvider(row: CsvRow, tier: string): ProviderLocation | CsvImportIssu
 
 export function parseNormalizedCsv(source: string): ImportPreview {
   const issues: CsvImportIssue[] = [];
-  let rows: Record<string, string>[];
+  let headers: string[] = [];
+  let rows: { record: Record<string, string>; info: { lines: number } }[];
 
   try {
-    rows = parse(source, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    // The header is captured separately so a file with no provider rows is still checked, and
+    // `info` gives each record's line in the file, which blank lines would otherwise shift.
+    rows = parse(source, { columns: (header: string[]) => (headers = header), info: true, skip_empty_lines: true, trim: true, bom: true });
   } catch (error) {
     return { records: [], issues: [{ row: 0, message: error instanceof Error ? error.message : "CSV could not be parsed" }], totalRows: 0 };
   }
 
-  const headers = rows.length ? Object.keys(rows[0]) : [];
   const missingHeaders = REQUIRED_IMPORT_HEADERS.filter((header) => !headers.includes(header));
-  if (missingHeaders.length) {
-    return {
-      records: [],
-      issues: [{ row: 1, message: `Missing required columns: ${missingHeaders.join(", ")}` }],
-      totalRows: rows.length
-    };
+  // A repeated column would silently keep only its last value.
+  const duplicateHeaders = [...new Set(headers.filter((header, index) => headers.indexOf(header) !== index))];
+  const headerIssues = [
+    missingHeaders.length ? `Missing required columns: ${missingHeaders.join(", ")}` : null,
+    duplicateHeaders.length ? `Columns appear more than once: ${duplicateHeaders.join(", ")}` : null,
+    !missingHeaders.length && !rows.length ? "The CSV has a header row but no provider rows" : null
+  ].filter((message): message is string => message !== null);
+  if (headerIssues.length) {
+    return { records: [], issues: headerIssues.map((message) => ({ row: 1, message })), totalRows: rows.length };
   }
 
   const parsedRows: { row: number; value: CsvRow }[] = [];
   const seenLicenses = new Set<string>();
-  rows.forEach((row, index) => {
-    const result = rowSchema.safeParse(row);
+  rows.forEach(({ record, info }) => {
+    const row = info.lines;
+    const result = rowSchema.safeParse(record);
     if (!result.success) {
-      issues.push({ row: index + 2, message: result.error.issues.map((issue) => issue.message).join("; ") });
+      issues.push({ row, message: result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ") });
       return;
     }
     if (seenLicenses.has(result.data.license_number)) {
-      issues.push({ row: index + 2, field: "license_number", message: "License number appears more than once" });
+      issues.push({ row, field: "license_number", message: "License number appears more than once" });
       return;
     }
     seenLicenses.add(result.data.license_number);
-    parsedRows.push({ row: index + 2, value: result.data });
+    parsedRows.push({ row, value: result.data });
   });
 
   const companyCounts = new Map<string, number>();

@@ -2,7 +2,8 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDirectoryProviderByLicense } from "@/lib/locations";
-import { isHttpUrl, normalizeEmail } from "@/lib/owner-input";
+import { hasApprovedClaim } from "@/lib/owner-content";
+import { isHttpUrl } from "@/lib/owner-input";
 import { getAdminSupabase, getCurrentUser, hasSupabaseConfig } from "@/lib/supabase";
 
 const profileSchema = z.object({
@@ -19,12 +20,10 @@ export async function PUT(request: Request) {
   if (!user?.email) return NextResponse.json({ error: "Sign in with the approved work email first." }, { status: 401 });
   const data = profileSchema.safeParse(await request.json().catch(() => null));
   if (!data.success) return NextResponse.json({ error: "Review the website, email, and content fields." }, { status: 400 });
-  const client = getAdminSupabase();
-  const { data: claim } = await client.from("provider_claims").select("id").eq("license_number", data.data.licenseNumber).eq("claimant_email", normalizeEmail(user.email)).eq("status", "approved").maybeSingle();
-  if (!claim) return NextResponse.json({ error: "You are not approved to manage this listing." }, { status: 403 });
+  if (!(await hasApprovedClaim(data.data.licenseNumber, user.email))) return NextResponse.json({ error: "You are not approved to manage this listing." }, { status: 403 });
   // Looked up before saving so a lookup failure cannot follow a save that succeeded.
   const provider = await getDirectoryProviderByLicense(data.data.licenseNumber);
-  const { error } = await client.from("provider_profiles").upsert({
+  const { error } = await getAdminSupabase().from("provider_profiles").upsert({
     license_number: data.data.licenseNumber,
     description: data.data.description || null,
     website: data.data.website || null,

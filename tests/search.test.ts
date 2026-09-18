@@ -29,6 +29,16 @@ test("page parameters are normalised to a positive, bounded integer", () => {
   assert.equal(parseSearchFilters({ page: "3" }).page, 3);
 });
 
+test("St., St and Saint match the same places, and a license number or ZIP finds its listing", () => {
+  const totals = ["St. Paul", "St Paul", "Saint Paul"].map((query) => searchLocations(filters({ query })).total);
+  assert.ok(totals[0] > 0);
+  assert.deepEqual(new Set(totals).size, 1, String(totals));
+  assert.equal(searchLocations(filters({ query: "Saint Louis Park" })).total, searchLocations(filters({ query: "St Louis Park" })).total);
+  assert.deepEqual(searchLocations(filters({ query: "1073601" })).items.map((item) => item.license_number), ["1073601"]);
+  assert.ok(searchLocations(filters({ query: "55808" })).items.every((item) => item.zip.startsWith("55808")));
+  assert.ok(searchLocations(filters({ query: "55808" })).total > 0);
+});
+
 // The tests below call the search_directory RPC against a database seeded from the launch
 // snapshot (npm run seed:supabase). Run them with: npx tsx --env-file=.env --test tests/search.test.ts
 const live = { skip: hasSupabaseConfig ? false : "Supabase is not configured" };
@@ -55,6 +65,17 @@ test("database search agrees with the snapshot and never drops an exact match", 
 test("database search ranks an exact name first and treats LIKE wildcards literally", live, async () => {
   assert.equal((await searchDirectory(filters({ query: "Yassins Home Inc" }))).items[0]?.program_name, "Yassins Home Inc");
   assert.equal((await searchDirectory(filters({ query: "%" }))).total, 0);
+});
+
+test("database search treats St., St and Saint alike and finds license numbers and ZIP codes", live, async () => {
+  for (const [spellings, expected] of [[["St. Paul", "St Paul", "Saint Paul"], "Saint Paul"], [["St Louis Park", "Saint Louis Park"], "St Louis Park"]] as const) {
+    const totals = await Promise.all(spellings.map(async (query) => (await searchDirectory(filters({ query }))).total));
+    assert.equal(new Set(totals).size, 1, `${spellings.join(" / ")}: ${totals}`);
+    assert.equal(totals[0], searchLocations(filters({ query: spellings[0] })).total);
+    assert.ok((await searchDirectory(filters({ query: spellings[1] }))).items.some((item) => item.city === expected));
+  }
+  assert.equal((await searchDirectory(filters({ query: "1073601" }))).items[0]?.license_number, "1073601");
+  assert.equal((await searchDirectory(filters({ query: "55808" }))).total, searchLocations(filters({ query: "55808" })).total);
 });
 
 test("database search clamps out-of-range pages and reports real empty results", live, async () => {

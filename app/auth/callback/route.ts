@@ -22,6 +22,8 @@ export async function GET(request: Request) {
       setAll(items) { items.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); }
     }
   });
-  await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  // An expired or already-used link: back to sign-in with an explanation, not on as if signed in.
+  if (error) return NextResponse.redirect(new URL(`/login?error=link&next=${encodeURIComponent(next)}`, request.url));
   return response;
 }

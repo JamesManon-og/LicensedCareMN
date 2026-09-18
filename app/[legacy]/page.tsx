@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { getProvider } from "@/lib/locations";
 
 export default async function LegacyRootProfilePage({ params }: { params: Promise<{ legacy: string }> }) {
@@ -7,5 +7,5 @@ export default async function LegacyRootProfilePage({ params }: { params: Promis
 
   const slug = legacy.replace(/\.html$/, "");
   if (!getProvider(slug)) notFound();
-  redirect(`/providers/${slug}`);
+  permanentRedirect(`/providers/${slug}`);
 }

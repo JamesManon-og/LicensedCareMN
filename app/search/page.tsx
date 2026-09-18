@@ -5,6 +5,7 @@ import { hrefForPage, Pagination } from "@/components/pagination";
 import { ProviderCard } from "@/components/provider-card";
 import { SearchFilters } from "@/components/search-filters";
 import { getDirectoryCounties, parseSearchFilters, searchDirectory, suggestDirectoryQueries } from "@/lib/locations";
+import { getClaimedLicenses } from "@/lib/owner-content";
 import { describeResultCount } from "@/lib/text";
 
 export const metadata: Metadata = { title: "Browse providers", description: "Search the Licensed Care MN launch directory by provider, county, service type, and listed license status." };
@@ -16,7 +17,10 @@ export default async function SearchPage({ searchParams }: Props) {
   const counties = await getDirectoryCounties();
   const filters = parseSearchFilters(params, counties);
   const result = await searchDirectory(filters);
-  const suggestions = result.total ? [] : await suggestDirectoryQueries(filters);
+  const [suggestions, claimed] = await Promise.all([
+    result.total ? [] : suggestDirectoryQueries(filters),
+    getClaimedLicenses(result.items.map((location) => location.license_number))
+  ]);
   return (
     <section className="wrap page-section">
       <div className="page-heading">
@@ -28,7 +32,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <aside><SearchFilters counties={counties} filters={filters} /></aside>
         <div>
           <p className="result-count">{describeResultCount(result.total)}</p>
-          {result.items.length ? <div className="results-list">{result.items.map((location) => <ProviderCard location={location} key={location.license_number} />)}</div> : <div className="empty-state card"><h2>No providers match those filters</h2>{suggestions.length ? <p>Did you mean {suggestions.map((suggestion, index) => <Fragment key={suggestion}>{index ? ", " : ""}<Link href={hrefForPage({ ...filters, query: suggestion }, 1)}>{suggestion}</Link></Fragment>)}?</p> : null}<p>Try a broader search, another county, or clear one of the service filters.</p></div>}
+          {result.items.length ? <div className="results-list">{result.items.map((location) => <ProviderCard location={location} claimed={claimed.has(location.license_number)} key={location.license_number} />)}</div> : <div className="empty-state card"><h2>No providers match those filters</h2>{suggestions.length ? <p>Did you mean {suggestions.map((suggestion, index) => <Fragment key={suggestion}>{index ? ", " : ""}<Link href={hrefForPage({ ...filters, query: suggestion }, 1)}>{suggestion}</Link></Fragment>)}?</p> : null}<p>Try a broader search, another county, or clear one of the service filters.</p></div>}
           <Pagination filters={filters} result={result} />
         </div>
       </div>
