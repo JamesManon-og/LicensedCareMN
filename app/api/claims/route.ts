@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     message: data.data.message || null,
     status: "pending"
   });
-  if (error) return NextResponse.json({ error: "The request could not be saved. Please try again later." }, { status: 500 });
+  // 23505: this email already has a pending or approved claim on the listing (a repeated submit).
+  if (error && error.code !== "23505") return NextResponse.json({ error: "The request could not be saved. Please try again later." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

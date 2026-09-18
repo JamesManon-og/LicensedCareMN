@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createClient } from "@supabase/supabase-js";
 import { POST as submitClaim } from "@/app/api/claims/route";
+import { decideClaim } from "@/lib/claims";
 import { publishImportBatch } from "@/lib/imports";
-import { getAllLocations, getCounties, getDirectoryCounties, getDirectoryProvider, getDirectoryProviderByLicense } from "@/lib/locations";
-import { getOwnerContent } from "@/lib/owner-content";
+import { getAllLocations, getCounties, getDirectoryCounties, getDirectoryLocations, getDirectoryProvider, getDirectoryProviderByLicense } from "@/lib/locations";
+import { getClaimedLicenses, getOwnerContent, hasApprovedClaim } from "@/lib/owner-content";
 import { getAdminSupabase, hasSupabaseConfig } from "@/lib/supabase";
 
 // These tests run against a database seeded from the launch snapshot (npm run seed:supabase) with
-// supabase/migrations/0003_directory_consistency.sql applied. They briefly add one test listing and
+// every migration in supabase/migrations applied. They briefly add one test listing and
 // two import batches, and remove them again. Run the file on its own, so the snapshot-parity checks
 // in search.test.ts never see the test listing:
 //   npx tsx --env-file=.env --test tests/directory-consistency.test.ts
@@ -32,11 +33,11 @@ const imported = {
   primary_tag: "Crisis Respite"
 };
 
-const claimRequest = () =>
+const claimRequest = (licenseNumber = imported.license_number) =>
   new Request("http://localhost/api/claims", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ licenseNumber: imported.license_number, name: "Test Owner", email: "Test.Owner@Example.com", role: "Administrator" })
+    body: JSON.stringify({ licenseNumber, name: "Test Owner", email: "Test.Owner@Example.com", role: "Administrator" })
   });
 
 test("publish_import cannot be called with the publishable key", live, async () => {
@@ -99,6 +100,47 @@ test("an imported listing can be claimed, and its owner content is public only w
   await must(client.from("provider_locations").update({ is_current: false }).eq("license_number", imported.license_number));
   assert.equal(await getDirectoryProvider(imported.slug), null);
   assert.equal((await submitClaim(claimRequest())).status, 404);
+});
+
+test("one open claim per claimant; claims are decided once and can be revoked", live, async (t) => {
+  const client = getAdminSupabase();
+  const must = async (request: PromiseLike<{ error: unknown }>) => assert.ifError((await request).error);
+  const listing = { ...imported, license_number: "QA-TEST-0002", slug: "qa-test-home-testville-qa-test-0002" };
+  await must(client.from("provider_locations").insert(listing));
+  t.after(async () => { await client.from("provider_locations").delete().eq("license_number", listing.license_number); });
+  const claimsFor = async () => (await client.from("provider_claims").select("id, status").eq("license_number", listing.license_number).order("created_at")).data ?? [];
+
+  // A repeated submission (a double click) is accepted but stored once.
+  assert.equal((await submitClaim(claimRequest(listing.license_number))).status, 200);
+  assert.equal((await submitClaim(claimRequest(listing.license_number))).status, 200);
+  const [claim] = await claimsFor();
+  assert.equal((await claimsFor()).length, 1);
+
+  assert.equal(await decideClaim(claim.id, "revoked"), null, "only an approved claim can be revoked");
+  assert.equal(await decideClaim(claim.id, "approved"), listing.license_number);
+  assert.equal(await decideClaim(claim.id, "rejected"), null, "an approved claim is not re-decided");
+  assert.equal(await decideClaim(crypto.randomUUID(), "approved"), null, "unknown claim");
+  assert.equal(await hasApprovedClaim(listing.license_number, "Test.Owner@Example.com"), true);
+  assert.equal(await hasApprovedClaim(listing.license_number, "someone.else@example.com"), false);
+  assert.deepEqual([...(await getClaimedLicenses([listing.license_number, "0000000"]))], [listing.license_number]);
+
+  assert.equal(await decideClaim(claim.id, "revoked"), listing.license_number);
+  assert.equal(await hasApprovedClaim(listing.license_number, "test.owner@example.com"), false);
+  assert.equal((await getClaimedLicenses([listing.license_number])).size, 0);
+  // After a revocation the same person may ask again.
+  assert.equal((await submitClaim(claimRequest(listing.license_number))).status, 200);
+  assert.deepEqual((await claimsFor()).map((row) => row.status), ["revoked", "pending"]);
+});
+
+test("provider-supplied content cannot be read with the publishable key", live, async () => {
+  const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, { auth: { persistSession: false } });
+  const { error } = await anon.from("provider_profiles").select("license_number").limit(1);
+  assert.equal(error?.code, "42501", JSON.stringify(error));
+});
+
+test("the directory listing reads every current listing", live, async () => {
+  const { count } = await getAdminSupabase().from("provider_locations").select("*", { count: "exact", head: true }).eq("is_current", true);
+  assert.equal((await getDirectoryLocations()).length, count);
 });
 
 test("the county filter lists the counties of current listings", live, async () => {

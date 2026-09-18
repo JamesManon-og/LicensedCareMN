@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_AFTER_LOGIN_PATH, resolveNextPath } from "@/lib/auth-redirect";
-import { describeResultCount } from "@/lib/text";
+import { describeResultCount, initials } from "@/lib/text";
 
 test("post-login redirects keep same-site paths", () => {
   assert.equal(resolveNextPath("/owner"), "/owner");
@@ -34,4 +34,11 @@ test("result counts use singular and plural wording", () => {
   assert.equal(describeResultCount(0), "0 providers match your search");
   assert.equal(describeResultCount(928), "928 providers match your search");
   assert.equal(describeResultCount(1200), "1,200 providers match your search");
+});
+
+test("avatar initials come from the first two words", () => {
+  assert.equal(initials("A & E Homes Inc"), "AE");
+  assert.equal(initials("Accessible Space Inc"), "AS");
+  assert.equal(initials("5th Street House"), "5S");
+  assert.equal(initials("Adapta"), "AD");
 });

@@ -5,7 +5,7 @@ import type { ProviderLocation } from "@/lib/types";
 
 type State = { kind: "idle" | "success" | "error"; message?: string };
 
-export function ClaimForm({ provider }: { provider: ProviderLocation }) {
+export function ClaimForm({ provider, enabled }: { provider: ProviderLocation; enabled: boolean }) {
   const [state, setState] = useState<State>({ kind: "idle" });
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,7 +23,7 @@ export function ClaimForm({ provider }: { provider: ProviderLocation }) {
       <span className="eyebrow">For provider representatives</span>
       <h2 className="display">Claim this listing</h2>
       <p>Claims are reviewed before any provider-supplied information appears publicly. DHS licensing facts cannot be changed through this form.</p>
-      {state.kind === "success" ? <p className="form-success" role="status">{state.message}</p> : <form onSubmit={submit} className="claim-form">
+      {!enabled ? <p>Claim requests are not open on this deployment yet.</p> : state.kind === "success" ? <p className="form-success" role="status">{state.message}</p> : <form onSubmit={submit} className="claim-form">
         <input type="hidden" name="licenseNumber" value={provider.license_number} />
         <label>Full name<input required name="name" autoComplete="name" /></label>
         <label>Work email<input required name="email" type="email" autoComplete="email" /></label>

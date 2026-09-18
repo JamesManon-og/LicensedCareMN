@@ -14,7 +14,8 @@ export default async function OwnerPage() {
   if (!user?.email) return <section className="wrap page-section"><div className="card setup-card"><h1 className="display">Sign in to manage a claimed listing</h1><p>Use the same work email that was approved in your provider claim.</p><Link className="btn-primary" href="/login?next=/owner">Sign in</Link></div></section>;
   const client = getAdminSupabase();
   const { data: claims } = await client.from("provider_claims").select("license_number").eq("claimant_email", normalizeEmail(user.email)).eq("status", "approved");
-  const licenses = claims?.map((claim) => claim.license_number) ?? [];
+  // A listing claimed (and approved) more than once is still managed from one form.
+  const licenses = [...new Set(claims?.map((claim) => claim.license_number) ?? [])];
   const providers = await Promise.all(licenses.map((license) => getDirectoryProviderByLicense(license)));
   const { data: profiles } = licenses.length ? await client.from("provider_profiles").select("license_number, description, website, contact_email, contact_phone").in("license_number", licenses) : { data: [] };
   const profilesByLicense = new Map((profiles ?? []).map((profile) => [profile.license_number, profile]));
