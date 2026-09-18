@@ -46,7 +46,9 @@ export async function getCurrentUser() {
 export async function isAdmin() {
   const user = await getCurrentUser();
   if (!user) return false;
+  // app_roles is not readable by anon/authenticated; the security-definer is_admin()
+  // checks the role for auth.uid() of the session carried by this user-scoped client.
   const client = await getServerSupabase();
-  const { data } = await client.from("app_roles").select("role").eq("user_id", user.id).maybeSingle();
-  return data?.role === "admin";
+  const { data, error } = await client.rpc("is_admin");
+  return !error && data === true;
 }
