@@ -30,7 +30,7 @@ The public directory runs without external credentials using the committed `data
 ## Enable operations with Supabase
 
 1. Create a Supabase project.
-2. Apply `supabase/migrations/0001_directory.sql` through the Supabase CLI or SQL editor.
+2. Apply every file in `supabase/migrations/`, in filename order, through the Supabase CLI or SQL editor.
 3. Copy `.env.example` to `.env.local` and add the project URL, publishable key, and server-only service-role key.
 4. Create the first authentication user, then add its UUID to `public.app_roles` with the `admin` role.
 5. Run `npm run seed:supabase` to publish the existing 945-location snapshot to Postgres.
@@ -53,7 +53,7 @@ Use a pipe (`|`) between multiple service tags. Allowed tags are:
 - Remote Overnight Supervision
 - Adult Mental Health Certification
 
-The importer derives URL slugs, provider tiers, primary tags, and status classes. A CSV is only publishable when every row is valid.
+ZIP codes must be five digits or ZIP+4, and a trailing " County" is dropped from county names. The importer derives URL slugs, provider tiers, primary tags, and status classes. A CSV is only publishable when every row is valid.
 
 ## Verification
 
