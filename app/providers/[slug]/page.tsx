@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ClaimForm } from "@/components/claim-form";
 import { ProviderCard } from "@/components/provider-card";
 import { StatusBadge } from "@/components/status-badge";
-import { formatPhone, getAllLocations, getDirectoryProvider, getRelatedProviders, STATUS_EXPLANATION } from "@/lib/locations";
+import { formatPhone, getAllLocations, getDirectoryProvider, getDirectoryRelatedProviders, STATUS_EXPLANATION } from "@/lib/locations";
 import { getOwnerContent } from "@/lib/owner-content";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -27,7 +27,7 @@ export default async function ProviderPage({ params }: Props) {
   const { slug } = await params;
   const provider = await getDirectoryProvider(slug);
   if (!provider) notFound();
-  const related = getRelatedProviders(provider);
+  const related = await getDirectoryRelatedProviders(provider);
   const ownerContent = await getOwnerContent(provider.license_number);
   const phoneHref = provider.phone?.replace(/[^\d+]/g, "");
   return (

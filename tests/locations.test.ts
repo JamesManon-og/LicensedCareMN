@@ -27,3 +27,9 @@ test("invalid query filters are safely discarded", () => {
   assert.equal(filters.county, "");
   assert.equal(filters.page, 1);
 });
+
+test("the county filter accepts exactly the counties it is given", () => {
+  assert.equal(parseSearchFilters({ county: "Imported" }, ["Hennepin", "Imported"]).county, "Imported");
+  assert.equal(parseSearchFilters({ county: "Hennepin" }, ["Imported"]).county, "");
+  assert.equal(parseSearchFilters({ county: "Hennepin" }).county, "Hennepin");
+});
