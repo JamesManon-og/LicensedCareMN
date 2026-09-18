@@ -1,7 +1,6 @@
-import { getCounties } from "@/lib/locations";
 import { SERVICE_TAGS, type SearchFilters } from "@/lib/types";
 
-export function SearchFilters({ filters }: { filters: SearchFilters }) {
+export function SearchFilters({ counties, filters }: { counties: readonly string[]; filters: SearchFilters }) {
   return (
     <form action="/search" className="search-filters card" aria-label="Filter providers">
       <label className="filter-label" htmlFor="q">Search providers</label>
@@ -10,7 +9,7 @@ export function SearchFilters({ filters }: { filters: SearchFilters }) {
       <label className="filter-label" htmlFor="county">County</label>
       <select id="county" name="county" defaultValue={filters.county}>
         <option value="">All counties</option>
-        {getCounties().map((county) => <option value={county} key={county}>{county} County</option>)}
+        {counties.map((county) => <option value={county} key={county}>{county} County</option>)}
       </select>
 
       <fieldset>

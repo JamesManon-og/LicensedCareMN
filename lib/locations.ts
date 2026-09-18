@@ -110,6 +110,8 @@ export function searchLocations(filters: SearchFilters): SearchResult {
   return { items: filtered.slice(offset, offset + PAGE_SIZE), total, page, totalPages, pageSize: PAGE_SIZE };
 }
 
+const PROVIDER_COLUMNS = "id, slug, program_name, company, tier, address, city, county, zip, phone, license_status, status_class, license_number, tags, primary_tag";
+
 function mapDatabaseLocation(row: Record<string, unknown>): ProviderLocation {
   return {
     id: String(row.id ?? row.license_number),
@@ -139,23 +141,75 @@ export async function getDirectoryLocations() {
   const client = getAdminSupabase();
   const { data, error } = await client
     .from("provider_locations")
-    .select("id, slug, program_name, company, tier, address, city, county, zip, phone, license_status, status_class, license_number, tags, primary_tag")
+    .select(PROVIDER_COLUMNS)
     .eq("is_current", true)
     .order("program_name");
   if (error || !data?.length) return locations;
   return data.map((row) => mapDatabaseLocation(row));
 }
 
+/**
+ * A current listing by slug. Once Supabase is configured it is the only source: a provider a
+ * later import retired is a 404, not the stale snapshot record. A database error throws, so a
+ * regenerating page keeps its last good version instead of becoming a 404.
+ */
 export async function getDirectoryProvider(slug: string) {
   if (!hasSupabaseConfig) return getProvider(slug);
-  const client = getAdminSupabase();
-  const { data } = await client
+  const { data, error } = await getAdminSupabase()
     .from("provider_locations")
-    .select("id, slug, program_name, company, tier, address, city, county, zip, phone, license_status, status_class, license_number, tags, primary_tag")
+    .select(PROVIDER_COLUMNS)
     .eq("slug", slug)
     .eq("is_current", true)
     .maybeSingle();
-  return data ? mapDatabaseLocation(data) : getProvider(slug);
+  if (error) throw new Error(`Provider lookup failed: ${error.message}`);
+  return data ? mapDatabaseLocation(data) : null;
+}
+
+/** A current listing by license number: the listing a claim or owner edit refers to, including imported ones. */
+export async function getDirectoryProviderByLicense(licenseNumber: string) {
+  if (!hasSupabaseConfig) return locations.find((location) => location.license_number === licenseNumber) ?? null;
+  const { data, error } = await getAdminSupabase()
+    .from("provider_locations")
+    .select(PROVIDER_COLUMNS)
+    .eq("license_number", licenseNumber)
+    .eq("is_current", true)
+    .maybeSingle();
+  if (error) throw new Error(`Provider lookup failed: ${error.message}`);
+  return data ? mapDatabaseLocation(data) : null;
+}
+
+/** getRelatedProviders over the current listings, so a profile never links to a retired provider. */
+export async function getDirectoryRelatedProviders(location: ProviderLocation, limit = 3) {
+  if (!hasSupabaseConfig) return getRelatedProviders(location, limit);
+  const sharing = (column: "company" | "county") =>
+    getAdminSupabase()
+      .from("provider_locations")
+      .select(PROVIDER_COLUMNS)
+      .eq(column, location[column])
+      .eq("is_current", true)
+      .eq("status_class", "active")
+      .neq("slug", location.slug)
+      .order("program_name")
+      .limit(limit);
+  const [sameCompany, sameCounty] = await Promise.all([sharing("company"), sharing("county")]);
+  // Related providers are optional; the profile still renders without them.
+  if (sameCompany.error || sameCounty.error) {
+    console.error(`Related providers failed: ${(sameCompany.error ?? sameCounty.error)?.message}`);
+    return [];
+  }
+  const rows = [...sameCompany.data, ...sameCounty.data];
+  return rows
+    .filter((row, index) => rows.findIndex((other) => other.slug === row.slug) === index)
+    .slice(0, limit)
+    .map((row) => mapDatabaseLocation(row));
+}
+
+/** Counties with a current listing: the county filter's options and the values parseSearchFilters accepts. */
+export async function getDirectoryCounties() {
+  if (!hasSupabaseConfig) return getCounties();
+  const { data, error } = await getAdminSupabase().rpc("directory_counties");
+  if (error) throw new Error(`County lookup failed: ${error.message}`);
+  return ((data ?? []) as { county: string }[]).map((row) => row.county);
 }
 
 export async function getDirectoryStats() {
@@ -231,10 +285,11 @@ export function isServiceTag(value: string): value is ServiceTag {
   return (SERVICE_TAGS as readonly string[]).includes(value);
 }
 
-export function parseSearchFilters(input: Record<string, string | string[] | undefined>): SearchFilters {
+/** `counties` are the accepted county values; pass getDirectoryCounties() when Supabase is the source. */
+export function parseSearchFilters(input: Record<string, string | string[] | undefined>, counties: readonly string[] = getCounties()): SearchFilters {
   const rawTags = input.tag;
   const tags = (Array.isArray(rawTags) ? rawTags : rawTags ? [rawTags] : []).filter(isServiceTag);
-  const county = typeof input.county === "string" && getCounties().includes(input.county) ? input.county : "";
+  const county = typeof input.county === "string" && counties.includes(input.county) ? input.county : "";
   const query = typeof input.q === "string" ? input.q.slice(0, 120) : "";
   const status = input.status === "all" ? "all" : "active";
   const requestedPage = typeof input.page === "string" ? Number.parseInt(input.page, 10) : 1;
