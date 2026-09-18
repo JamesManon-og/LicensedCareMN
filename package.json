@@ -8,7 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "seed:supabase": "tsx scripts/seed-supabase.ts"
+    "seed:supabase": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed-supabase.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
