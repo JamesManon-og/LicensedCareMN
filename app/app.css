@@ -35,6 +35,9 @@ main { min-height: 60vh; }
 .snapshot-notice p { margin: 0 0 14px; line-height: 1.6; }
 .snapshot-inline { margin: 22px 0; padding: 12px 14px; font-size: 13px; line-height: 1.5; }
 .page-heading { max-width: 760px; }
+/* The brand lines are spans (a link may only hold phrasing content); stack them like the prototype did. */
+.logo-word, .logo-sub { display: block; }
+.search-grid { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 22px; align-items: start; }
 .search-layout { margin-top: 24px; }
 .search-filters { padding: 18px; position: sticky; top: 86px; }
 .search-filters input:not([type="checkbox"]):not([type="radio"]), .search-filters select, .claim-form input, .claim-form textarea, .auth-card input, .owner-profile-form input, .owner-profile-form textarea { width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; color: var(--ink); background: #fff; font: inherit; }
@@ -120,6 +123,7 @@ main { min-height: 60vh; }
   .stat-row { grid-template-columns: repeat(2, 1fr); gap: 18px 0; }
   .stat-row div:nth-child(2) { border-right: 0; }
   .stat-row div:nth-child(n+3) { border-top: 1px solid var(--border); padding-top: 18px; }
+  .search-grid { grid-template-columns: minmax(0, 1fr); }
   .search-filters { position: static; }
   .provider-hero { flex-direction: column; }
   .provider-layout { grid-template-columns: 1fr; }
