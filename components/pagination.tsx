@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { SearchFilters, SearchResult } from "@/lib/types";
 
-function hrefForPage(filters: SearchFilters, page: number) {
+export function hrefForPage(filters: SearchFilters, page: number) {
   const query = new URLSearchParams();
   if (filters.query) query.set("q", filters.query);
   if (filters.county) query.set("county", filters.county);

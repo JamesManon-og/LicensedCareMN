@@ -89,6 +89,13 @@ function includesSearchText(location: ProviderLocation, query: string) {
     .every((term) => haystack.includes(term));
 }
 
+/** Clamps a requested page into [1, totalPages]; an empty result still has one (empty) page. */
+export function paginate(requestedPage: number, total: number, pageSize = PAGE_SIZE) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(requestedPage, 1), totalPages);
+  return { page, totalPages, offset: (page - 1) * pageSize };
+}
+
 export function searchLocations(filters: SearchFilters): SearchResult {
   const filtered = locations.filter((location) => {
     if (filters.status === "active" && location.status_class !== "active") return false;
@@ -98,11 +105,9 @@ export function searchLocations(filters: SearchFilters): SearchResult {
   });
 
   const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const page = Math.min(Math.max(filters.page, 1), totalPages);
-  const start = (page - 1) * PAGE_SIZE;
+  const { page, totalPages, offset } = paginate(filters.page, total);
 
-  return { items: filtered.slice(start, start + PAGE_SIZE), total, page, totalPages, pageSize: PAGE_SIZE };
+  return { items: filtered.slice(offset, offset + PAGE_SIZE), total, page, totalPages, pageSize: PAGE_SIZE };
 }
 
 function mapDatabaseLocation(row: Record<string, unknown>): ProviderLocation {
@@ -177,28 +182,50 @@ export async function getDirectoryTopCounties(limit = 8) {
   return [...counts.entries()].map(([county, count]) => ({ county, count })).sort((a, b) => b.count - a.count || a.county.localeCompare(b.county)).slice(0, limit);
 }
 
+/**
+ * Ranked, typo-tolerant search through the search_directory RPC (supabase/migrations/0002_search.sql).
+ * The RPC clamps an out-of-range offset to the last page, so paginate() reports the page its rows
+ * came from. An empty result is a real "no matches"; the snapshot is only used when Supabase is not
+ * configured, never to paper over a database error.
+ */
 export async function searchDirectory(filters: SearchFilters): Promise<SearchResult> {
   if (!hasSupabaseConfig) return searchLocations(filters);
-  const client = getAdminSupabase();
-  let request = client
-    .from("provider_locations")
-    .select("id, slug, program_name, company, tier, address, city, county, zip, phone, license_status, status_class, license_number, tags, primary_tag", { count: "exact" })
-    .eq("is_current", true)
-    .order("program_name");
-  if (filters.status === "active") request = request.eq("status_class", "active");
-  if (filters.county) request = request.eq("county", filters.county);
-  if (filters.tags.length) request = request.overlaps("tags", filters.tags);
-  if (filters.query) {
-    const term = filters.query.replace(/[,%().]/g, " ").trim();
-    if (term) request = request.or(`program_name.ilike.%${term}%,company.ilike.%${term}%,city.ilike.%${term}%,county.ilike.%${term}%`);
-  }
-  const start = Math.max(filters.page - 1, 0) * PAGE_SIZE;
-  const { data, count, error } = await request.range(start, start + PAGE_SIZE - 1);
-  if (error || !data) return searchLocations(filters);
-  const total = count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  return { items: data.map((row) => mapDatabaseLocation(row)), total, page: Math.min(filters.page, totalPages), totalPages, pageSize: PAGE_SIZE };
+  const { data, error } = await getAdminSupabase().rpc("search_directory", {
+    p_query: filters.query,
+    p_county: filters.county,
+    p_tags: filters.tags,
+    p_status: filters.status,
+    p_limit: PAGE_SIZE,
+    p_offset: (Math.max(filters.page, 1) - 1) * PAGE_SIZE
+  });
+  if (error) throw new Error(`Directory search failed: ${error.message}`);
+  const rows = (data ?? []) as Record<string, unknown>[];
+  const total = Number(rows[0]?.total_count ?? 0);
+  const { page, totalPages } = paginate(filters.page, total);
+  return { items: rows.map((row) => mapDatabaseLocation(row)), total, page, totalPages, pageSize: PAGE_SIZE };
 }
+
+/** "Did you mean" queries for a search with no results; each one matches at least one provider under the same filters. */
+export async function suggestDirectoryQueries(filters: SearchFilters): Promise<string[]> {
+  if (!hasSupabaseConfig || !filters.query.trim()) return [];
+  const { data, error } = await getAdminSupabase().rpc("suggest_directory_queries", {
+    p_query: filters.query,
+    p_county: filters.county,
+    p_tags: filters.tags,
+    p_status: filters.status,
+    p_limit: 3
+  });
+  // Suggestions are optional; the empty state still renders without them.
+  if (error) {
+    console.error(`Directory suggestions failed: ${error.message}`);
+    return [];
+  }
+  return ((data ?? []) as { suggestion: string }[]).map((row) => row.suggestion);
+}
+
+// Pages past the last one are clamped to it after searching; this cap only keeps the database
+// offset ((page - 1) * PAGE_SIZE) far inside Postgres's integer range.
+export const MAX_PAGE = 10_000;
 
 export function isServiceTag(value: string): value is ServiceTag {
   return (SERVICE_TAGS as readonly string[]).includes(value);
@@ -217,7 +244,7 @@ export function parseSearchFilters(input: Record<string, string | string[] | und
     county,
     tags,
     status,
-    page: Number.isFinite(requestedPage) ? requestedPage : 1
+    page: Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), MAX_PAGE) : 1
   };
 }
 
