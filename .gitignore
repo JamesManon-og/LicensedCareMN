@@ -5,3 +5,9 @@ node_modules/
 .env.*.local
 coverage/
 *.tsbuildinfo
+.DS_Store
+
+# Local-only working notes (kept out of the submission)
+AGENTS.md
+CLAUDE.md
+PLAYBOOK.md
