@@ -18,3 +18,15 @@ test("CSV validation rejects duplicate licenses and invalid service tags", () =>
   assert.equal(preview.records.length, 0);
   assert.equal(preview.issues.length, 2);
 });
+
+test("a __proto__ header column neither pollutes prototypes nor stands in for required columns", () => {
+  const partial = parseNormalizedCsv("__proto__,program_name\npolluted,Example Home");
+  assert.equal(partial.records.length, 0);
+  assert.match(partial.issues[0]?.message ?? "", /^Missing required columns: license_number,/);
+
+  const full = parseNormalizedCsv(`__proto__,${header}\npolluted,999001,Example Home,Example Care LLC,1 Main St,Minneapolis,Hennepin,55401,,Active,Crisis Respite`);
+  assert.deepEqual(full.issues, []);
+  assert.equal(full.records[0]?.license_number, "999001");
+  assert.equal(Object.getPrototypeOf(full.records[0]), Object.prototype);
+  assert.equal(({} as Record<string, unknown>).license_number, undefined);
+});
