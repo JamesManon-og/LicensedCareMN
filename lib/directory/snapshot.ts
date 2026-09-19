@@ -51,6 +51,9 @@ export const snapshotDirectory: DirectorySource = {
   async getByLicense(licenseNumber) {
     return snapshotLocations.find((location) => location.license_number === licenseNumber) ?? null;
   },
+  async getByLicenses(licenseNumbers) {
+    return snapshotLocations.filter((location) => licenseNumbers.includes(location.license_number));
+  },
   async getRelated(location, limit = 3) {
     return snapshotLocations
       .filter(
