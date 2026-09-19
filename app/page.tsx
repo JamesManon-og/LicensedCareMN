@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getDirectoryStats, getDirectoryTagCounts, getDirectoryTopCounties } from "@/lib/directory";
+import { getDirectoryOverview } from "@/lib/directory";
 import { SERVICE_TAGS } from "@/lib/types";
 
 const tagDescriptions: Record<(typeof SERVICE_TAGS)[number], string> = {
@@ -11,7 +11,7 @@ const tagDescriptions: Record<(typeof SERVICE_TAGS)[number], string> = {
 };
 
 export default async function HomePage() {
-  const [stats, tagCounts, topCounties] = await Promise.all([getDirectoryStats(), getDirectoryTagCounts(), getDirectoryTopCounties()]);
+  const { stats, tagCounts, topCounties } = await getDirectoryOverview();
 
   return (
     <>
