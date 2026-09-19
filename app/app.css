@@ -120,6 +120,7 @@ main { min-height: 60vh; }
 .footer-copy { max-width: 310px; margin: 12px 0 0; color: var(--ink-3); font-size: 12.5px; line-height: 1.6; }
 .not-found { text-align: center; }
 .not-found h1 { margin: 12px auto; max-width: 600px; font-size: clamp(2.4rem, 6vw, 4rem); }
+.error-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
 
 @media (max-width: 767px) {
   .wrap { padding-left: 16px; padding-right: 16px; }

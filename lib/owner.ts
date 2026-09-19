@@ -42,19 +42,23 @@ export async function saveOwnerProfile(user: Actor, input: OwnerProfileInput) {
 
 /**
  * The current listings the user holds an approved claim on, each with its saved provider content.
- * A listing claimed (and approved) more than once is listed once.
+ * A listing claimed (and approved) more than once is listed once. Both reads are required: a failed
+ * claims read would show "no approved listings", and a failed profiles read would show empty forms
+ * whose next save erases the owner's content.
  */
 export async function getOwnerListings(user: Actor) {
   const client = getAdminSupabase();
-  const { data: claims } = await client.from("provider_claims").select("license_number").eq("claimant_email", normalizeEmail(user.email)).eq("status", "approved");
-  const licenses = [...new Set(claims?.map((claim) => claim.license_number as string) ?? [])];
+  const { data: claims, error: claimsError } = await client.from("provider_claims").select("license_number").eq("claimant_email", normalizeEmail(user.email)).eq("status", "approved");
+  if (claimsError) throw new Error(`Owner claims lookup failed: ${claimsError.message}`);
+  const licenses = [...new Set(claims.map((claim) => claim.license_number as string))];
   if (!licenses.length) return [];
-  const [providers, { data: profiles }] = await Promise.all([
+  const [providers, profiles] = await Promise.all([
     directory.getByLicenses(licenses),
     client.from("provider_profiles").select("license_number, description, website, contact_email, contact_phone").in("license_number", licenses)
   ]);
+  if (profiles.error) throw new Error(`Owner profiles lookup failed: ${profiles.error.message}`);
   const providersByLicense = new Map(providers.map((provider) => [provider.license_number, provider]));
-  const profilesByLicense = new Map((profiles ?? []).map((profile) => [profile.license_number as string, profile]));
+  const profilesByLicense = new Map(profiles.data.map((profile) => [profile.license_number as string, profile]));
   return licenses.flatMap((license) => {
     const provider = providersByLicense.get(license);
     return provider ? [{ provider, profile: profilesByLicense.get(license) ?? null }] : [];

@@ -38,16 +38,18 @@ export async function getListingClaims(
 /**
  * Whether this email holds an approved claim on the listing. Nothing stops the same person from
  * submitting (and an administrator approving) a claim twice, so this must not expect exactly one row.
+ * Throws when the lookup fails, so an outage is not reported to the owner as "not approved".
  */
 export async function hasApprovedClaim(licenseNumber: string, email: string) {
-  const { data } = await getAdminSupabase()
+  const { data, error } = await getAdminSupabase()
     .from("provider_claims")
     .select("id")
     .eq("license_number", licenseNumber)
     .eq("claimant_email", normalizeEmail(email))
     .eq("status", "approved")
     .limit(1);
-  return Boolean(data?.length);
+  if (error) throw new Error(`Approved claim lookup failed: ${error.message}`);
+  return data.length > 0;
 }
 
 /** The listings among `licenseNumbers` that have an approved claim, in one query for a page of search results. */
