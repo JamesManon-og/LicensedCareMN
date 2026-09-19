@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import type { z } from "zod";
 
+// Error handling (README, "Conventions"): required data throws, so a route answers 500 through
+// handleRoute and a page shows app/error.tsx; optional extras log and are left out; a failed read
+// never returns an empty result.
+
 /** A failure the user should see: an HTTP status and a message that is safe to show them. */
 export class HttpError extends Error {
   constructor(readonly status: number, message: string) {

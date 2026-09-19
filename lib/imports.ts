@@ -114,13 +114,17 @@ export async function publishImportBatch(batchId: string, confirmedRetirements: 
   const client = getAdminSupabase();
   const { data: batch, error: batchError } = await client.from("import_batches").select("status, snapshot").eq("id", batchId).maybeSingle();
   // publish_import refuses anything but a draft too; checking first skips the directory read.
-  if (batchError || batch?.status !== "draft") return { status: "failed" };
+  if (batchError) throw new Error(`Import batch lookup failed: ${batchError.message}`);
+  if (batch?.status !== "draft") return { status: "failed" };
   const retirements = compareWithDirectory(batch.snapshot as ProviderLocation[], await directory.listLocations()).retired.length;
   if (retirements !== confirmedRetirements) return { status: "unconfirmed", retirements };
 
   const { error } = await client.rpc("publish_import", { p_batch_id: batchId });
   if (!error) return { status: "published" };
-  await client.from("import_batches").update({ status: "failed" }).eq("id", batchId).eq("status", "draft");
+  console.error(`Import publish failed: ${error.message}`);
+  const { error: markError } = await client.from("import_batches").update({ status: "failed" }).eq("id", batchId).eq("status", "draft");
+  // Recording the failure is secondary: the publish was rolled back either way.
+  if (markError) console.error(`Marking the import as failed did not save: ${markError.message}`);
   return { status: "failed" };
 }
 

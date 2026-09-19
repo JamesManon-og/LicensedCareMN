@@ -70,9 +70,11 @@ export async function decideClaim(_admin: AdminActor, id: string, decision: Clai
 
 /** Every claim request, newest first, for the review queue. */
 export async function listClaims(_admin: AdminActor) {
-  const { data } = await getAdminSupabase()
+  const { data, error } = await getAdminSupabase()
     .from("provider_claims")
     .select("id, license_number, claimant_name, claimant_email, claimant_role, claimant_phone, message, status, created_at")
     .order("created_at", { ascending: false });
-  return data ?? [];
+  // An outage must not read as "there are no claim requests".
+  if (error) throw new Error(`Claim queue lookup failed: ${error.message}`);
+  return data;
 }
