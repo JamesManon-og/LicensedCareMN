@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getDirectoryStats, getDirectoryTagCounts, getDirectoryTopCounties } from "@/lib/locations";
+import { getDirectoryStats, getDirectoryTagCounts, getDirectoryTopCounties } from "@/lib/directory";
 import { SERVICE_TAGS } from "@/lib/types";
 
 const tagDescriptions: Record<(typeof SERVICE_TAGS)[number], string> = {

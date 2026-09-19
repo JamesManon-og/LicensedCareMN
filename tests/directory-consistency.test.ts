@@ -3,8 +3,9 @@ import test from "node:test";
 import { createClient } from "@supabase/supabase-js";
 import { POST as submitClaim } from "@/app/api/claims/route";
 import { decideClaim } from "@/lib/claims";
+import { snapshotDirectory, snapshotLocations } from "@/lib/directory/snapshot";
+import { supabaseDirectory } from "@/lib/directory/supabase";
 import { publishImportBatch } from "@/lib/imports";
-import { getAllLocations, getCounties, getDirectoryCounties, getDirectoryLocations, getDirectoryProvider, getDirectoryProviderByLicense } from "@/lib/locations";
 import { getClaimedLicenses, getOwnerContent, hasApprovedClaim } from "@/lib/owner-content";
 import { getAdminSupabase, hasSupabaseConfig } from "@/lib/supabase";
 
@@ -65,7 +66,7 @@ test("a failed publish marks its draft failed and leaves other batches alone", l
   // publish can only fail, and it fails before anything could be retired. Confirming every current
   // listing's retirement gets it past the confirmation check to publish_import.
   const failing = await createBatch("draft", [{}]);
-  const current = (await getDirectoryLocations()).length;
+  const current = (await supabaseDirectory.listLocations()).length;
   assert.deepEqual(await publishImportBatch(failing, current), { status: "failed" });
   assert.equal(await statusOf(failing), "failed");
 
@@ -85,7 +86,7 @@ test("a publish that would retire listings nobody confirmed is refused before it
   assert.ifError(error);
   t.after(async () => { await client.from("import_batches").delete().eq("id", data!.id); });
 
-  const current = (await getDirectoryLocations()).length;
+  const current = (await supabaseDirectory.listLocations()).length;
   assert.deepEqual(await publishImportBatch(data!.id, 0), { status: "unconfirmed", retirements: current });
   assert.deepEqual(await publishImportBatch(data!.id, current - 1), { status: "unconfirmed", retirements: current });
   assert.equal((await client.from("import_batches").select("status").eq("id", data!.id).single()).data?.status, "draft");
@@ -98,8 +99,8 @@ test("an imported listing can be claimed, and its owner content is public only w
   // Deleting the listing cascades to its claims and provider profile.
   t.after(async () => { await client.from("provider_locations").delete().eq("license_number", imported.license_number); });
 
-  assert.equal(getAllLocations().some((location) => location.license_number === imported.license_number), false);
-  assert.equal((await getDirectoryProviderByLicense(imported.license_number))?.slug, imported.slug);
+  assert.equal(snapshotLocations.some((location) => location.license_number === imported.license_number), false);
+  assert.equal((await supabaseDirectory.getByLicense(imported.license_number))?.slug, imported.slug);
 
   assert.equal((await submitClaim(claimRequest())).status, 200);
   const { data: claim } = await client.from("provider_claims").select("id, claimant_email").eq("license_number", imported.license_number).single();
@@ -117,7 +118,7 @@ test("an imported listing can be claimed, and its owner content is public only w
   assert.equal(await getOwnerContent(imported.license_number), null, "revoked claim");
 
   await must(client.from("provider_locations").update({ is_current: false }).eq("license_number", imported.license_number));
-  assert.equal(await getDirectoryProvider(imported.slug), null);
+  assert.equal(await supabaseDirectory.getBySlug(imported.slug), null);
   assert.equal((await submitClaim(claimRequest())).status, 404);
 });
 
@@ -159,9 +160,9 @@ test("provider-supplied content cannot be read with the publishable key", live, 
 
 test("the directory listing reads every current listing", live, async () => {
   const { count } = await getAdminSupabase().from("provider_locations").select("*", { count: "exact", head: true }).eq("is_current", true);
-  assert.equal((await getDirectoryLocations()).length, count);
+  assert.equal((await supabaseDirectory.listLocations()).length, count);
 });
 
 test("the county filter lists the counties of current listings", live, async () => {
-  assert.deepEqual((await getDirectoryCounties()).sort(), getCounties().sort());
+  assert.deepEqual((await supabaseDirectory.getCounties()).sort(), (await snapshotDirectory.getCounties()).sort());
 });

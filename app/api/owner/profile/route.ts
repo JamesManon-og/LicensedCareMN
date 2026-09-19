@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getDirectoryProviderByLicense } from "@/lib/locations";
+import { directory } from "@/lib/directory";
 import { hasApprovedClaim } from "@/lib/owner-content";
 import { isHttpUrl } from "@/lib/owner-input";
 import { getAdminSupabase, getCurrentUser, hasSupabaseConfig } from "@/lib/supabase";
@@ -22,7 +22,7 @@ export async function PUT(request: Request) {
   if (!data.success) return NextResponse.json({ error: "Review the website, email, and content fields." }, { status: 400 });
   if (!(await hasApprovedClaim(data.data.licenseNumber, user.email))) return NextResponse.json({ error: "You are not approved to manage this listing." }, { status: 403 });
   // Looked up before saving so a lookup failure cannot follow a save that succeeded.
-  const provider = await getDirectoryProviderByLicense(data.data.licenseNumber);
+  const provider = await directory.getByLicense(data.data.licenseNumber);
   const { error } = await getAdminSupabase().from("provider_profiles").upsert({
     license_number: data.data.licenseNumber,
     description: data.data.description || null,

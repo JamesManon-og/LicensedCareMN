@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseNormalizedCsv, REQUIRED_IMPORT_HEADERS } from "@/lib/csv";
-import { getAllLocations } from "@/lib/locations";
+import { snapshotLocations } from "@/lib/directory/snapshot";
 
 const header = "license_number,program_name,company,address,city,county,zip,phone,license_status,tags";
 
@@ -60,10 +60,10 @@ test("ZIP codes are validated and a County suffix is dropped", () => {
 
 test("every launch-snapshot record passes the importer's validation", () => {
   const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
-  const lines = getAllLocations().map((location) =>
+  const lines = snapshotLocations.map((location) =>
     REQUIRED_IMPORT_HEADERS.map((column) => quote(column === "tags" ? location.tags.join("|") : String(location[column] ?? ""))).join(",")
   );
   const preview = parseNormalizedCsv([REQUIRED_IMPORT_HEADERS.join(","), ...lines].join("\n"));
   assert.deepEqual(preview.issues, []);
-  assert.equal(preview.records.length, getAllLocations().length);
+  assert.equal(preview.records.length, snapshotLocations.length);
 });

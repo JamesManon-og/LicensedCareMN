@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { directory } from "@/lib/directory";
+import { snapshotDirectory, snapshotLocations } from "@/lib/directory/snapshot";
 import { dhsLicenseUrl, mapsUrl, searchByCountyHref, searchByTagHref, searchByTextHref } from "@/lib/links";
-import { getAllLocations, getDirectoryCounties, parseSearchFilters, searchLocations } from "@/lib/locations";
+import { parseSearchFilters } from "@/lib/search-filters";
 import { SERVICE_TAGS } from "@/lib/types";
 
 // What the /search page receives for a given href: single values arrive as plain strings.
@@ -35,23 +37,23 @@ test("a missing zip still produces a clean Maps query", () => {
 
 test("every service tag link round-trips through the search filter parser", () => {
   for (const tag of SERVICE_TAGS) {
-    assert.deepEqual(parseSearchFilters(searchParamsOf(searchByTagHref(tag))).tags, [tag], tag);
+    assert.deepEqual(parseSearchFilters(searchParamsOf(searchByTagHref(tag)), []).tags, [tag], tag);
   }
 });
 
 // Validated the way /search does it: against the directory's counties (the database's when configured).
 test("every county link round-trips through the search filter parser", async () => {
-  const counties = await getDirectoryCounties();
+  const counties = await directory.getCounties();
   assert.ok(counties.includes("St. Louis"));
   for (const county of counties) {
     assert.equal(parseSearchFilters(searchParamsOf(searchByCountyHref(county)), counties).county, county, county);
   }
 });
 
-test("every listed city link finds that city's providers", () => {
-  for (const city of new Set(getAllLocations().map((location) => location.city))) {
-    const filters = { ...parseSearchFilters(searchParamsOf(searchByTextHref(city))), status: "all" as const };
+test("every listed city link finds that city's providers", async () => {
+  for (const city of new Set(snapshotLocations.map((location) => location.city))) {
+    const filters = { ...parseSearchFilters(searchParamsOf(searchByTextHref(city)), []), status: "all" as const };
     assert.equal(filters.query, city);
-    assert.ok(searchLocations(filters).total > 0, city);
+    assert.ok((await snapshotDirectory.search(filters)).total > 0, city);
   }
 });

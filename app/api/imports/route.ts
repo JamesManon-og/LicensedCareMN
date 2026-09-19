@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseNormalizedCsv } from "@/lib/csv";
 import { compareWithDirectory, type ImportChanges } from "@/lib/imports";
-import { getDirectoryLocations } from "@/lib/locations";
+import { directory } from "@/lib/directory";
 import { getAdminSupabase, hasSupabaseConfig, isAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   let changes: ImportChanges | null = null;
   if (!preview.issues.length) {
     try {
-      changes = compareWithDirectory(preview.records, await getDirectoryLocations());
+      changes = compareWithDirectory(preview.records, await directory.listLocations());
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: "The current directory could not be read to compare with this file. Try again." }, { status: 500 });

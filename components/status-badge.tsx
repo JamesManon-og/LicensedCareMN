@@ -1,4 +1,4 @@
-import { STATUS_LABEL } from "@/lib/locations";
+import { STATUS_LABEL } from "@/lib/text";
 import type { StatusClass } from "@/lib/types";
 
 export function StatusBadge({ status }: { status: StatusClass }) {

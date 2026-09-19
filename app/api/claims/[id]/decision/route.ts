@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { decideClaim } from "@/lib/claims";
-import { getDirectoryProviderByLicense } from "@/lib/locations";
+import { directory } from "@/lib/directory";
 import { isAdmin } from "@/lib/supabase";
 
 const decisionSchema = z.object({ decision: z.enum(["approved", "rejected", "revoked"]) });
@@ -16,7 +16,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (licenseNumber === undefined) return NextResponse.json({ error: "The claim could not be updated." }, { status: 500 });
   if (licenseNumber === null) return NextResponse.json({ error: "This claim has already been decided. Reload to see its current status." }, { status: 409 });
   // The profile shows the listing's claimed badge and, while approved, its provider content.
-  const provider = await getDirectoryProviderByLicense(licenseNumber).catch(() => null);
+  const provider = await directory.getByLicense(licenseNumber).catch(() => null);
   if (provider) revalidatePath(`/providers/${provider.slug}`);
   return NextResponse.json({ ok: true });
 }

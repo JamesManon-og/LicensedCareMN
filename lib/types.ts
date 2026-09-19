@@ -7,6 +7,11 @@ export const SERVICE_TAGS = [
 ] as const;
 
 export type ServiceTag = (typeof SERVICE_TAGS)[number];
+
+export function isServiceTag(value: string): value is ServiceTag {
+  return (SERVICE_TAGS as readonly string[]).includes(value);
+}
+
 export type StatusClass = "active" | "caution" | "critical";
 
 export type ProviderLocation = {

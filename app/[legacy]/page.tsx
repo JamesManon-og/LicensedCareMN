@@ -1,11 +1,11 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import { getProvider } from "@/lib/locations";
+import { findSnapshotProvider } from "@/lib/directory/snapshot";
 
 export default async function LegacyRootProfilePage({ params }: { params: Promise<{ legacy: string }> }) {
   const { legacy } = await params;
   if (!legacy.endsWith(".html")) notFound();
 
   const slug = legacy.replace(/\.html$/, "");
-  if (!getProvider(slug)) notFound();
+  if (!findSnapshotProvider(slug)) notFound();
   permanentRedirect(`/providers/${slug}`);
 }
