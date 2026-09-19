@@ -57,6 +57,16 @@ ZIP codes must be five digits or ZIP+4, and a trailing " County" is dropped from
 
 Publishing replaces the directory: every current listing that is not in the file is retired. The preview therefore counts the listings the file adds, updates, leaves unchanged, and retires, and names each listing it would retire. Publishing a file that retires anything requires ticking a confirmation, and the publish endpoint re-counts the retirements and refuses the request (409) unless they match the confirmed number.
 
+## Conventions
+
+Database reads follow one error-handling rule:
+
+- **Required data throws.** A page or route that cannot read what it is about (search results, a listing, the claim queue, an owner's listings, an approval check) fails. Pages then show the error page in `app/error.tsx`, with a Try again button, and a regenerating static page keeps its last good version.
+- **Optional extras log and are left out.** Related providers, search suggestions, "claimed" badges and a profile's provider-supplied content log the error, and the page renders without them.
+- **A failed read never returns an empty result.** An empty list means there really is nothing there; it never stands in for "the database could not be reached". Otherwise an outage reads as "no claims to review" or, on the owner page, as empty forms that would erase the saved content on the next save.
+
+`tests/outage.test.ts` checks the rule offline by pointing Supabase at a port where nothing listens.
+
 ## Verification
 
 ```bash
