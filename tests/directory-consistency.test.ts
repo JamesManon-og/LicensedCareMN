@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createClient } from "@supabase/supabase-js";
 import { POST as submitClaim } from "@/app/api/claims/route";
+import type { AdminActor } from "@/lib/auth";
 import { decideClaim } from "@/lib/claims";
 import { snapshotDirectory, snapshotLocations } from "@/lib/directory/snapshot";
+import { HttpError } from "@/lib/http";
 import { supabaseDirectory } from "@/lib/directory/supabase";
 import { publishImportBatch } from "@/lib/imports";
 import { getClaimedLicenses, getListingClaims, hasApprovedClaim } from "@/lib/owner-content";
@@ -33,6 +35,10 @@ const imported = {
   tags: ["Crisis Respite"],
   primary_tag: "Crisis Respite"
 };
+
+// The business functions take the signed-in administrator; they never read cookies, so a test builds one.
+const admin: AdminActor = { id: crypto.randomUUID(), email: "test.admin@example.com", role: "admin" };
+const rejectsWith = (status: number) => (error: unknown) => error instanceof HttpError && error.status === status;
 
 const claimRequest = (licenseNumber = imported.license_number) =>
   new Request("http://localhost/api/claims", {
@@ -143,10 +149,11 @@ test("one open claim per claimant; claims are decided once and can be revoked", 
   const [claim] = await claimsFor();
   assert.equal((await claimsFor()).length, 1);
 
-  assert.equal(await decideClaim(claim.id, "revoked"), null, "only an approved claim can be revoked");
-  assert.equal(await decideClaim(claim.id, "approved"), listing.license_number);
-  assert.equal(await decideClaim(claim.id, "rejected"), null, "an approved claim is not re-decided");
-  assert.equal(await decideClaim(crypto.randomUUID(), "approved"), null, "unknown claim");
+  await assert.rejects(decideClaim(admin, claim.id, "revoked"), rejectsWith(409), "only an approved claim can be revoked");
+  assert.equal(await decideClaim(admin, claim.id, "approved"), listing.slug);
+  await assert.rejects(decideClaim(admin, claim.id, "rejected"), rejectsWith(409), "an approved claim is not re-decided");
+  await assert.rejects(decideClaim(admin, crypto.randomUUID(), "approved"), rejectsWith(409), "unknown claim");
+  await assert.rejects(decideClaim(admin, "abc", "approved"), rejectsWith(404), "malformed id");
   assert.equal(await hasApprovedClaim(listing.license_number, "Test.Owner@Example.com"), true);
   assert.equal(await hasApprovedClaim(listing.license_number, "someone.else@example.com"), false);
   assert.deepEqual([...(await getClaimedLicenses([listing.license_number, "0000000"]))], [listing.license_number]);
@@ -154,7 +161,7 @@ test("one open claim per claimant; claims are decided once and can be revoked", 
   assert.deepEqual([...(await getListingClaims("0000000", [listing.license_number])).claimed], [listing.license_number]);
   assert.equal((await getListingClaims("0000000", [listing.license_number])).ownerContent, null);
 
-  assert.equal(await decideClaim(claim.id, "revoked"), listing.license_number);
+  assert.equal(await decideClaim(admin, claim.id, "revoked"), listing.slug);
   assert.equal(await hasApprovedClaim(listing.license_number, "test.owner@example.com"), false);
   assert.equal((await getClaimedLicenses([listing.license_number])).size, 0);
   // After a revocation the same person may ask again.
