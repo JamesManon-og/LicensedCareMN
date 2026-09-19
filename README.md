@@ -55,6 +55,8 @@ Use a pipe (`|`) between multiple service tags. Allowed tags are:
 
 ZIP codes must be five digits or ZIP+4, and a trailing " County" is dropped from county names. The importer derives URL slugs, provider tiers, primary tags, and status classes. A CSV is only publishable when every row is valid.
 
+Publishing replaces the directory: every current listing that is not in the file is retired. The preview therefore counts the listings the file adds, updates, leaves unchanged, and retires, and names each listing it would retire. Publishing a file that retires anything requires ticking a confirmation, and the publish endpoint re-counts the retirements and refuses the request (409) unless they match the confirmed number.
+
 ## Verification
 
 ```bash

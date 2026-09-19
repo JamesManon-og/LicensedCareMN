@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseNormalizedCsv } from "@/lib/csv";
+import { compareWithDirectory, type ImportChanges } from "@/lib/imports";
+import { getDirectoryLocations } from "@/lib/locations";
 import { getAdminSupabase, hasSupabaseConfig, isAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -14,6 +16,17 @@ export async function POST(request: Request) {
   // The full 945-listing CSV is about 150 KB; this leaves ample room while bounding the parse.
   if (file.size > MAX_IMPORT_BYTES) return NextResponse.json({ error: "The CSV is larger than 4 MB. Split it or remove unused columns." }, { status: 413 });
   const preview = parseNormalizedCsv(await file.text());
+  // Only a valid file can be published, so only a valid file is compared with the directory. The
+  // comparison runs before the upload so a failed read does not leave a stored file behind.
+  let changes: ImportChanges | null = null;
+  if (!preview.issues.length) {
+    try {
+      changes = compareWithDirectory(preview.records, await getDirectoryLocations());
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "The current directory could not be read to compare with this file. Try again." }, { status: 500 });
+    }
+  }
   const client = getAdminSupabase();
   const path = `drafts/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
   const { error: uploadError } = await client.storage.from("imports").upload(path, file, { contentType: "text/csv", upsert: false });
@@ -28,5 +41,5 @@ export async function POST(request: Request) {
     snapshot: preview.records
   }).select("id").single();
   if (batchError || !batch) return NextResponse.json({ error: "The import preview could not be saved." }, { status: 500 });
-  return NextResponse.json({ id: batch.id, totalRows: preview.totalRows, validRows: preview.records.length, issues: preview.issues });
+  return NextResponse.json({ id: batch.id, totalRows: preview.totalRows, validRows: preview.records.length, issues: preview.issues, changes });
 }
