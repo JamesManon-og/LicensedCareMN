@@ -75,6 +75,17 @@ export const supabaseDirectory: DirectorySource = {
     return data ? mapDatabaseLocation(data) : null;
   },
 
+  async getByLicenses(licenseNumbers) {
+    if (!licenseNumbers.length) return [];
+    const { data, error } = await getAdminSupabase()
+      .from("provider_locations")
+      .select(PROVIDER_COLUMNS)
+      .in("license_number", licenseNumbers)
+      .eq("is_current", true);
+    if (error) throw new Error(`Provider lookup failed: ${error.message}`);
+    return data.map((row) => mapDatabaseLocation(row));
+  },
+
   async getRelated(location, limit = 3) {
     const sharing = (column: "company" | "county") =>
       getAdminSupabase()

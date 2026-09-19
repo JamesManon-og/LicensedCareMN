@@ -4,10 +4,10 @@ import { notFound } from "next/navigation";
 import { ClaimForm } from "@/components/claim-form";
 import { ProviderCard } from "@/components/provider-card";
 import { StatusBadge } from "@/components/status-badge";
-import { directory } from "@/lib/directory";
+import { directory, getProviderBySlug } from "@/lib/directory";
 import { snapshotLocations } from "@/lib/directory/snapshot";
 import { dhsLicenseUrl, mapsUrl, searchByCountyHref, searchByTagHref, searchByTextHref } from "@/lib/links";
-import { getClaimedLicenses, getOwnerContent } from "@/lib/owner-content";
+import { getListingClaims } from "@/lib/owner-content";
 import { hasSupabaseConfig } from "@/lib/supabase";
 import { formatPhone, initials, STATUS_EXPLANATION } from "@/lib/text";
 
@@ -19,7 +19,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const provider = await directory.getBySlug(slug);
+  const provider = await getProviderBySlug(slug);
   if (!provider) return { title: "Provider not found" };
   return {
     title: provider.program_name,
@@ -29,10 +29,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProviderPage({ params }: Props) {
   const { slug } = await params;
-  const provider = await directory.getBySlug(slug);
+  const provider = await getProviderBySlug(slug);
   if (!provider) notFound();
-  const [related, ownerContent] = await Promise.all([directory.getRelated(provider), getOwnerContent(provider.license_number)]);
-  const claimed = await getClaimedLicenses([provider, ...related].map((location) => location.license_number));
+  const related = await directory.getRelated(provider);
+  const { claimed, ownerContent } = await getListingClaims(provider.license_number, related.map((location) => location.license_number));
   const phoneHref = provider.phone?.replace(/[^\d+]/g, "");
   return (
     <section className="wrap page-section provider-page">

@@ -31,6 +31,12 @@ for (const [name, source, options] of sources) {
     assert.equal(await source.getByLicense("0000000"), null);
   });
 
+  test(`${name}: finds several listings by license number in one call, leaving out unknown ones`, options, async () => {
+    const found = await source.getByLicenses(["1073601", "0000000", "1076181"]);
+    assert.deepEqual(found.map((location) => location.license_number).sort(), ["1073601", "1076181"]);
+    assert.deepEqual(await source.getByLicenses([]), []);
+  });
+
   test(`${name}: lists the counties of its listings, sorted`, options, async () => {
     const counties = await source.getCounties();
     assert.deepEqual(new Set(counties), new Set((await source.listLocations()).map((location) => location.county)));
