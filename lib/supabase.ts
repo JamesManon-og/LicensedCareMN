@@ -34,21 +34,3 @@ export function getAdminSupabase() {
   if (!url || !serviceRoleKey) throw new Error("Supabase service role credentials are not configured.");
   return createClient(url, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
 }
-
-export async function getCurrentUser() {
-  if (!hasSupabaseConfig) return null;
-  const client = await getServerSupabase();
-  const { data, error } = await client.auth.getUser();
-  if (error) return null;
-  return data.user;
-}
-
-export async function isAdmin() {
-  const user = await getCurrentUser();
-  if (!user) return false;
-  // app_roles is not readable by anon/authenticated; the security-definer is_admin()
-  // checks the role for auth.uid() of the session carried by this user-scoped client.
-  const client = await getServerSupabase();
-  const { data, error } = await client.rpc("is_admin");
-  return !error && data === true;
-}

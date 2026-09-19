@@ -1,4 +1,7 @@
+import type { AdminActor } from "@/lib/auth";
+import { parseNormalizedCsv } from "@/lib/csv";
 import { directory } from "@/lib/directory";
+import { HttpError, parseId } from "@/lib/http";
 import { getAdminSupabase } from "@/lib/supabase";
 import type { ProviderLocation } from "@/lib/types";
 
@@ -41,6 +44,54 @@ export function compareWithDirectory(records: ProviderLocation[], current: Provi
   return changes;
 }
 
+// The full 945-listing CSV is about 150 KB; this leaves ample room while bounding the parse.
+const MAX_IMPORT_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Validates an uploaded CSV, compares a valid one with the current directory, and saves it as an
+ * import batch: a draft that can be published, or an invalid batch kept as a record. The file is
+ * stored privately first; if the batch then cannot be saved, the stored file is removed again.
+ */
+export async function createImportPreview(_admin: AdminActor, file: FormDataEntryValue | null | undefined) {
+  if (!(file instanceof File) || !file.name.toLocaleLowerCase().endsWith(".csv")) throw new HttpError(400, "Choose a CSV file to validate.");
+  if (file.size > MAX_IMPORT_BYTES) throw new HttpError(413, "The CSV is larger than 4 MB. Split it or remove unused columns.");
+  const preview = parseNormalizedCsv(await file.text());
+  // Only a valid file can be published, so only a valid file is compared with the directory. The
+  // comparison runs before the upload so a failed read does not leave a stored file behind.
+  let changes: ImportChanges | null = null;
+  if (!preview.issues.length) {
+    try {
+      changes = compareWithDirectory(preview.records, await directory.listLocations());
+    } catch (error) {
+      console.error(error);
+      throw new HttpError(500, "The current directory could not be read to compare with this file. Try again.");
+    }
+  }
+  const client = getAdminSupabase();
+  const path = `drafts/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+  const { error: uploadError } = await client.storage.from("imports").upload(path, file, { contentType: "text/csv", upsert: false });
+  if (uploadError) {
+    console.error(`Import upload failed: ${uploadError.message}`);
+    throw new HttpError(500, "The source file could not be stored privately. Check the imports storage bucket.");
+  }
+  const { data: batch, error: batchError } = await client.from("import_batches").insert({
+    status: preview.issues.length ? "invalid" : "draft",
+    source_filename: file.name,
+    storage_path: path,
+    total_rows: preview.totalRows,
+    valid_rows: preview.records.length,
+    issues: preview.issues,
+    snapshot: preview.records
+  }).select("id").single();
+  if (batchError || !batch) {
+    console.error(`Import batch could not be saved: ${batchError?.message}`);
+    const { error: removeError } = await client.storage.from("imports").remove([path]);
+    if (removeError) console.error(`Stored import file ${path} could not be removed: ${removeError.message}`);
+    throw new HttpError(500, "The import preview could not be saved.");
+  }
+  return { id: batch.id as string, totalRows: preview.totalRows, validRows: preview.records.length, issues: preview.issues, changes };
+}
+
 export type PublishOutcome =
   | { status: "published" }
   | { status: "failed" }
@@ -71,4 +122,16 @@ export async function publishImportBatch(batchId: string, confirmedRetirements: 
   if (!error) return { status: "published" };
   await client.from("import_batches").update({ status: "failed" }).eq("id", batchId).eq("status", "draft");
   return { status: "failed" };
+}
+
+/**
+ * Publishes a draft import batch for an administrator, turning the outcome into the error they
+ * see: a 409 when the confirmed retirements no longer match, a 500 when the publish fails.
+ */
+export async function publishImport(_admin: AdminActor, id: string, confirmedRetirements: number) {
+  const outcome = await publishImportBatch(parseId(id, "This import was not found."), confirmedRetirements);
+  if (outcome.status === "unconfirmed") {
+    throw new HttpError(409, `Publishing would retire ${outcome.retirements} listing(s), but ${confirmedRetirements} were confirmed. The directory may have changed since this preview; validate the file again to see the current changes.`);
+  }
+  if (outcome.status === "failed") throw new HttpError(500, "The import could not be published. The prior public directory remains unchanged; upload a corrected CSV to try again.");
 }
