@@ -4,21 +4,22 @@ import { notFound } from "next/navigation";
 import { ClaimForm } from "@/components/claim-form";
 import { ProviderCard } from "@/components/provider-card";
 import { StatusBadge } from "@/components/status-badge";
+import { directory } from "@/lib/directory";
+import { snapshotLocations } from "@/lib/directory/snapshot";
 import { dhsLicenseUrl, mapsUrl, searchByCountyHref, searchByTagHref, searchByTextHref } from "@/lib/links";
-import { formatPhone, getAllLocations, getDirectoryProvider, getDirectoryRelatedProviders, STATUS_EXPLANATION } from "@/lib/locations";
 import { getClaimedLicenses, getOwnerContent } from "@/lib/owner-content";
 import { hasSupabaseConfig } from "@/lib/supabase";
-import { initials } from "@/lib/text";
+import { formatPhone, initials, STATUS_EXPLANATION } from "@/lib/text";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-  return getAllLocations().map((location) => ({ slug: location.slug }));
+  return snapshotLocations.map((location) => ({ slug: location.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const provider = await getDirectoryProvider(slug);
+  const provider = await directory.getBySlug(slug);
   if (!provider) return { title: "Provider not found" };
   return {
     title: provider.program_name,
@@ -28,9 +29,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProviderPage({ params }: Props) {
   const { slug } = await params;
-  const provider = await getDirectoryProvider(slug);
+  const provider = await directory.getBySlug(slug);
   if (!provider) notFound();
-  const [related, ownerContent] = await Promise.all([getDirectoryRelatedProviders(provider), getOwnerContent(provider.license_number)]);
+  const [related, ownerContent] = await Promise.all([directory.getRelated(provider), getOwnerContent(provider.license_number)]);
   const claimed = await getClaimedLicenses([provider, ...related].map((location) => location.license_number));
   const phoneHref = provider.phone?.replace(/[^\d+]/g, "");
   return (

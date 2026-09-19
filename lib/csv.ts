@@ -1,7 +1,6 @@
 import { parse } from "csv-parse/sync";
 import { z } from "zod";
-import { isServiceTag } from "@/lib/locations";
-import type { CsvImportIssue, ImportPreview, ProviderLocation, ServiceTag, StatusClass } from "@/lib/types";
+import { isServiceTag, type CsvImportIssue, type ImportPreview, type ProviderLocation, type ServiceTag, type StatusClass } from "@/lib/types";
 
 export const REQUIRED_IMPORT_HEADERS = [
   "license_number",

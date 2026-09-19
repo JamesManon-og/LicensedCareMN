@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { StatusBadge } from "@/components/status-badge";
 import { searchByCountyHref, searchByTagHref, searchByTextHref } from "@/lib/links";
-import { formatPhone } from "@/lib/locations";
+import { formatPhone } from "@/lib/text";
 import { initials } from "@/lib/text";
 import type { ProviderLocation } from "@/lib/types";
 

@@ -4,8 +4,9 @@ import { Fragment } from "react";
 import { hrefForPage, Pagination } from "@/components/pagination";
 import { ProviderCard } from "@/components/provider-card";
 import { SearchFilters } from "@/components/search-filters";
-import { getDirectoryCounties, parseSearchFilters, searchDirectory, suggestDirectoryQueries } from "@/lib/locations";
+import { directory } from "@/lib/directory";
 import { getClaimedLicenses } from "@/lib/owner-content";
+import { parseSearchFilters } from "@/lib/search-filters";
 import { describeResultCount } from "@/lib/text";
 
 export const metadata: Metadata = { title: "Browse providers", description: "Search the Licensed Care MN launch directory by provider, county, service type, and listed license status." };
@@ -14,11 +15,11 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
-  const counties = await getDirectoryCounties();
+  const counties = await directory.getCounties();
   const filters = parseSearchFilters(params, counties);
-  const result = await searchDirectory(filters);
+  const result = await directory.search(filters);
   const [suggestions, claimed] = await Promise.all([
-    result.total ? [] : suggestDirectoryQueries(filters),
+    result.total ? [] : directory.suggest(filters),
     getClaimedLicenses(result.items.map((location) => location.license_number))
   ]);
   return (

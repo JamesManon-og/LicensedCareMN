@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { snapshotLocations as directory } from "@/lib/directory/snapshot";
 import { compareWithDirectory } from "@/lib/imports";
-import { getAllLocations } from "@/lib/locations";
 
-const directory = getAllLocations();
 const [first, second, third] = directory;
 
 test("an import is compared with the directory as additions, updates, unchanged rows and retirements", () => {

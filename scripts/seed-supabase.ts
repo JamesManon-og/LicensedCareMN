@@ -1,9 +1,9 @@
-import { getAllLocations } from "@/lib/locations";
+import { snapshotLocations } from "@/lib/directory/snapshot";
 import { getAdminSupabase } from "@/lib/supabase";
 
 async function seed() {
   const client = getAdminSupabase();
-  const records = getAllLocations();
+  const records = snapshotLocations;
   const { data: batch, error } = await client.from("import_batches").insert({
     status: "draft",
     source_filename: "locations.json",

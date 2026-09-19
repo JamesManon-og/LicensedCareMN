@@ -1,4 +1,4 @@
-import { getDirectoryLocations } from "@/lib/locations";
+import { directory } from "@/lib/directory";
 import { getAdminSupabase } from "@/lib/supabase";
 import type { ProviderLocation } from "@/lib/types";
 
@@ -64,7 +64,7 @@ export async function publishImportBatch(batchId: string, confirmedRetirements: 
   const { data: batch, error: batchError } = await client.from("import_batches").select("status, snapshot").eq("id", batchId).maybeSingle();
   // publish_import refuses anything but a draft too; checking first skips the directory read.
   if (batchError || batch?.status !== "draft") return { status: "failed" };
-  const retirements = compareWithDirectory(batch.snapshot as ProviderLocation[], await getDirectoryLocations()).retired.length;
+  const retirements = compareWithDirectory(batch.snapshot as ProviderLocation[], await directory.listLocations()).retired.length;
   if (retirements !== confirmedRetirements) return { status: "unconfirmed", retirements };
 
   const { error } = await client.rpc("publish_import", { p_batch_id: batchId });
