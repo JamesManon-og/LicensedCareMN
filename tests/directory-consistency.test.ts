@@ -6,7 +6,7 @@ import { decideClaim } from "@/lib/claims";
 import { snapshotDirectory, snapshotLocations } from "@/lib/directory/snapshot";
 import { supabaseDirectory } from "@/lib/directory/supabase";
 import { publishImportBatch } from "@/lib/imports";
-import { getClaimedLicenses, getOwnerContent, hasApprovedClaim } from "@/lib/owner-content";
+import { getClaimedLicenses, getListingClaims, hasApprovedClaim } from "@/lib/owner-content";
 import { getAdminSupabase, hasSupabaseConfig } from "@/lib/supabase";
 
 // These tests run against a database seeded from the launch snapshot (npm run seed:supabase) with
@@ -107,15 +107,22 @@ test("an imported listing can be claimed, and its owner content is public only w
   assert.equal(claim?.claimant_email, "test.owner@example.com");
 
   await must(client.from("provider_profiles").insert({ license_number: imported.license_number, description: "Test content", website: "javascript:alert(1)" }));
-  assert.equal(await getOwnerContent(imported.license_number), null, "pending claim");
+  // The featured listing plus one related listing, as a profile page reads them.
+  const profileClaims = () => getListingClaims(imported.license_number, ["1073601"]);
+  let claims = await profileClaims();
+  assert.equal(claims.ownerContent, null, "pending claim");
+  assert.equal(claims.claimed.size, 0, "pending claim");
 
   await must(client.from("provider_claims").update({ status: "approved" }).eq("id", claim!.id));
-  const content = await getOwnerContent(imported.license_number);
-  assert.equal(content?.description, "Test content");
-  assert.equal(content?.website, null, "a javascript: website is never rendered");
+  claims = await profileClaims();
+  assert.deepEqual([...claims.claimed], [imported.license_number]);
+  assert.equal(claims.ownerContent?.description, "Test content");
+  assert.equal(claims.ownerContent?.website, null, "a javascript: website is never rendered");
 
   await must(client.from("provider_claims").update({ status: "rejected" }).eq("id", claim!.id));
-  assert.equal(await getOwnerContent(imported.license_number), null, "revoked claim");
+  claims = await profileClaims();
+  assert.equal(claims.ownerContent, null, "revoked claim");
+  assert.equal(claims.claimed.size, 0, "revoked claim");
 
   await must(client.from("provider_locations").update({ is_current: false }).eq("license_number", imported.license_number));
   assert.equal(await supabaseDirectory.getBySlug(imported.slug), null);
@@ -143,6 +150,9 @@ test("one open claim per claimant; claims are decided once and can be revoked", 
   assert.equal(await hasApprovedClaim(listing.license_number, "Test.Owner@Example.com"), true);
   assert.equal(await hasApprovedClaim(listing.license_number, "someone.else@example.com"), false);
   assert.deepEqual([...(await getClaimedLicenses([listing.license_number, "0000000"]))], [listing.license_number]);
+  // Claimed as a related listing, while the featured listing stays unclaimed and shows no owner content.
+  assert.deepEqual([...(await getListingClaims("0000000", [listing.license_number])).claimed], [listing.license_number]);
+  assert.equal((await getListingClaims("0000000", [listing.license_number])).ownerContent, null);
 
   assert.equal(await decideClaim(claim.id, "revoked"), listing.license_number);
   assert.equal(await hasApprovedClaim(listing.license_number, "test.owner@example.com"), false);
