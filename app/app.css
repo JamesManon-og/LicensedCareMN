@@ -98,6 +98,16 @@ main { min-height: 60vh; }
 .upload-form input { max-width: 100%; }
 .import-preview { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
 .import-preview ul { padding-left: 20px; color: var(--critical-ink); }
+.import-changes { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 16px 0; }
+.import-changes div { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.import-changes dt { color: var(--ink-3); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.import-changes dd { margin: 4px 0 0; color: var(--ink); font: 700 1.5rem/1 Newsreader, Georgia, serif; }
+.import-changes .import-changes-retired { border-color: oklch(83% .06 25); background: oklch(94% .05 25); }
+.import-changes .import-changes-retired dd, .import-changes .import-changes-retired dt { color: var(--critical-ink); }
+.import-retirements { margin: 0 0 16px; padding: 16px; border: 1px solid oklch(83% .06 25); border-radius: 12px; background: oklch(97% .02 25); }
+.import-retirements p { margin: 0 0 10px; color: var(--critical-ink); line-height: 1.55; }
+.import-retirements ul { max-height: 220px; margin: 0 0 12px; overflow: auto; color: var(--ink-2); font-size: 13px; line-height: 1.6; }
+.import-retirements .check-row { color: var(--critical-ink); font-weight: 700; }
 .claim-queue, .owner-list { display: grid; gap: 14px; }
 .claim-review { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px; }
 .claim-review p, .claim-review blockquote { margin: 4px 0; color: var(--ink-2); font-size: 13px; }
