@@ -62,14 +62,33 @@ test("a failed publish marks its draft failed and leaves other batches alone", l
   const statusOf = async (id: string) => (await client.from("import_batches").select("status").eq("id", id).single()).data?.status;
 
   // A record with no fields violates provider_operators' not-null name on the first insert, so this
-  // publish can only fail, and it fails before anything could be retired.
+  // publish can only fail, and it fails before anything could be retired. Confirming every current
+  // listing's retirement gets it past the confirmation check to publish_import.
   const failing = await createBatch("draft", [{}]);
-  assert.ok(await publishImportBatch(failing));
+  const current = (await getDirectoryLocations()).length;
+  assert.deepEqual(await publishImportBatch(failing, current), { status: "failed" });
   assert.equal(await statusOf(failing), "failed");
 
   const invalid = await createBatch("invalid", []);
-  assert.ok(await publishImportBatch(invalid));
+  assert.deepEqual(await publishImportBatch(invalid, current), { status: "failed" });
   assert.equal(await statusOf(invalid), "invalid");
+});
+
+test("a publish that would retire listings nobody confirmed is refused before it starts", live, async (t) => {
+  const client = getAdminSupabase();
+  // The same unpublishable record as above: if the check were missing, publish_import would still fail.
+  const { data, error } = await client
+    .from("import_batches")
+    .insert({ status: "draft", source_filename: "qa-test.csv", storage_path: "test/qa-test.csv", total_rows: 1, valid_rows: 1, issues: [], snapshot: [{}] })
+    .select("id")
+    .single();
+  assert.ifError(error);
+  t.after(async () => { await client.from("import_batches").delete().eq("id", data!.id); });
+
+  const current = (await getDirectoryLocations()).length;
+  assert.deepEqual(await publishImportBatch(data!.id, 0), { status: "unconfirmed", retirements: current });
+  assert.deepEqual(await publishImportBatch(data!.id, current - 1), { status: "unconfirmed", retirements: current });
+  assert.equal((await client.from("import_batches").select("status").eq("id", data!.id).single()).data?.status, "draft");
 });
 
 test("an imported listing can be claimed, and its owner content is public only while the claim is approved", live, async (t) => {
