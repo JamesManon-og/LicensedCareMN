@@ -1,0 +1,17 @@
+Link: https://licensedcare.vercel.app
+Repo: https://github.com/JamesManon-og/LicensedCareMN
+
+I worked through the README requirements, tested each existing feature, fixed the problems I found, and improved several parts of the app.
+
+Some improvements:
+- Fixed the database, login, admin, and provider access problems.
+- Made provider search tolerate typos, and added search by license number and ZIP code.
+- Made CSV importing safer, with validation and a preview before publishing.
+- Required a confirmation, and a fresh re-check, before publishing can remove any providers.
+- Got provider claims and owner editing working, and let admins revoke a claim.
+- Made the site handle database and service failures clearly, instead of showing empty results.
+- Added security checks for private features, login redirects, and provider website links.
+- Made license numbers, addresses, services, cities, and counties clickable.
+- Added automated tests for the main features and fixes.
+
+In short: the README requirements work, the problems I found are fixed, and the improvements are covered by automated tests.
